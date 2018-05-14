@@ -35,5 +35,8 @@
     <ClCompile Include="database.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="6,7,8的预处理.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

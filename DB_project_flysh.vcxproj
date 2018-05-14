@@ -117,6 +117,7 @@
     <ClInclude Include="query.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="6,7,8的预处理.cpp" />
     <ClCompile Include="database.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="query.cpp" />
