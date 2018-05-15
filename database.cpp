@@ -9,18 +9,6 @@ using namespace std;
 
 void savePage (string filePath, size_t currentPage, size_t size, float vectorSet[20][784], size_t bitMap[20], size_t id[20]);
 
-class SparseRow : Row {
-
-};
-
-class SparesMatrix : Matrix{
-    SparesMatrix(size_t row, size_t col);
-    SparesMatrix(char* matrixName);
-    Row& operator[] (size_t);
-    Matrix& transpose();
-};
-
-
 void savePage (string filePath, size_t currentPage, size_t size, float vectorSet[20][784], size_t bitMap[20], size_t id[20]) {
 	fstream in;
 	in.open("source.txt", ios::in | ios::binary | ios::app);
@@ -45,10 +33,11 @@ void savePage (string filePath, size_t currentPage, size_t size, float vectorSet
 	in.close();
 }
 
-
+//#define generate
+#ifdef generate
 int main() {
     fstream in;
-    in.open("source.txt", ios::in | ios::binary);
+    in.open("mnist10k", ios::in | ios::binary);
     in.seekp(0, ios::beg);
     char fileHead[sizeof(size_t) * 2];
     in.write(fileHead, sizeof(size_t) * 2);
@@ -70,7 +59,6 @@ int main() {
     string tempStr;
     out.open("mnist10k.txt", ios::in | ios::binary);
     while (getline(out, tempStr, ',')) {
-        out >> tempf >> tempc;
         if (tempFloatNum != 783) {
             tempVectorSet[tempVectorNum][tempFloatNum] = atof(tempStr.c_str());
             tempFloatNum++;
@@ -104,3 +92,14 @@ int main() {
     in.write(fileHead, sizeof(size_t) * 2);
     in.close();
 }
+#endif // generate
+
+//int main() {
+//    DenseMatrix M("source.txt");
+//    for (int i = 0; i != 1; ++i) {
+//        for (int j = 0; j != M.getColumn(); ++j) {
+//            cout << M[i][j] << endl;
+//        }
+//    }
+//    cout << M[0][0] << endl;
+//}

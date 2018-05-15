@@ -21,6 +21,9 @@
     <ClInclude Include="query.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="dataProcess.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="query.cpp">
@@ -35,7 +38,10 @@
     <ClCompile Include="database.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="6,7,8的预处理.cpp">
+    <ClCompile Include="dataProcess.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

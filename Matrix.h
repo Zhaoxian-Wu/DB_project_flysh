@@ -19,7 +19,7 @@ public:
     size_t getID() {
         return id;
     };
-    size_t getSize() {
+    size_t getColumn() {
         return dimension;
     }
 protected:
@@ -35,11 +35,11 @@ public:
         return row;
     }
     size_t getColumn() {
-        return column;
+        return dimension;
     }
-private:
+protected:
     size_t row;
-    size_t column;
+    size_t dimension;
 };
 
 class SparseRow : Row {
@@ -70,14 +70,14 @@ class DenseMatrix : public Matrix {
 public:
     DenseMatrix(string matrixName);
     DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension);
+    ~DenseMatrix();
+
     Row& operator[] (size_t);
     Matrix& transpose(string);
 
-    Row& operator[] (size_t _row);
-
     void setRow(Row& row);
 
-    ~DenseMatrix();
+    void showPage(int);
 private:
     // 得到指定页号的page在页管理器中的位置
     int getPageIndex(size_t pageNum);
@@ -96,14 +96,11 @@ private:
 
     static char buffer[PAGE_NUMBER][PAGE_SIZE];		//buffer page
     static size_t page[PAGE_NUMBER];				//page id of matrix
-    //static int bufferUsed[PAGE_NUMBER];				//page states of buffer
     static DenseMatrix* usedMatrix[PAGE_NUMBER];	//matrix who used this page
     static const string dir;
 
     fstream file;
-    size_t vectorNum;
-    size_t dimension;
     int used[PAGE_NUMBER];
 };
 
-Matrix& dot(Matrix&, Matrix&);
+Matrix& dot(string, Matrix&, Matrix&);

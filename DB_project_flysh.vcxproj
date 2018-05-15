@@ -113,12 +113,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="dataProcess.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="query.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="6,7,8的预处理.cpp" />
     <ClCompile Include="database.cpp" />
+    <ClCompile Include="dataProcess.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="query.cpp" />
     <ClCompile Include="tests.cpp" />
