@@ -11,8 +11,14 @@ using std::string;
 class Row {
 public:
     static float dist(Row&, Row&);
-    virtual float& operator[] (size_t) = 0;
-    virtual float* getBuffer() = 0;
+    Row(Row&);
+    Row(size_t _dimension, size_t _id, char* _buffer);
+    ~Row();
+    float& operator[] (size_t);
+    Row& operator=(const Row&);
+    float* getBuffer() {
+        return row;
+    }
     void setID(size_t _id) {
         id = _id;
     }
@@ -22,14 +28,15 @@ public:
     size_t getColumn() {
         return dimension;
     }
-protected:
+private:
+    float* row;
     size_t dimension;
     size_t id; // id其实就是矩阵的行数
 };
 
 class Matrix {
 public:
-    virtual Row& operator[] (size_t) = 0;
+    virtual Row operator[] (size_t) = 0;
     virtual Matrix& transpose(string) = 0;
     size_t getRow() {
         return row;
@@ -42,37 +49,13 @@ protected:
     size_t dimension;
 };
 
-class SparseRow : Row {
-
-};
-
-class SparesMatrix : public Matrix{
-public:
-    SparesMatrix(int row, int col);
-    SparesMatrix(char* matrixName);
-    Row& operator[] (size_t);
-    Matrix& transpose(string);
-};
-
-class DenseRow : public Row {
-public:
-    ~DenseRow();
-    DenseRow(size_t _dimension, size_t _id, char* _buffer);
-    float& operator[] (size_t);
-    float* getBuffer() {
-        return row;
-    }
-private:
-    float* row;
-};
-
 class DenseMatrix : public Matrix {
 public:
     DenseMatrix(string matrixName);
     DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension);
     ~DenseMatrix();
 
-    Row& operator[] (size_t);
+    Row operator[] (size_t);
     Matrix& transpose(string);
 
     void setRow(Row& row);

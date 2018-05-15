@@ -9,7 +9,11 @@
 
 using namespace std;
 
-DenseRow::DenseRow(size_t _dimension, size_t _id, char* buffer = nullptr) {
+Row::Row(Row& other) {
+    *this = other;
+}
+
+Row::Row(size_t _dimension, size_t _id, char* buffer = nullptr) {
     id = _id;
     dimension = _dimension;
     row = new float[dimension];
@@ -20,11 +24,22 @@ DenseRow::DenseRow(size_t _dimension, size_t _id, char* buffer = nullptr) {
 	}
 }
 
-DenseRow::~DenseRow() {
+Row::~Row() {
     delete[] row;
 }
 
-float& DenseRow::operator[] (size_t index) {
+Row& Row::operator=(const Row&other) {
+    dimension = other.dimension;
+    id = other.id;
+    if (row) {
+        delete[] row;
+    }
+    row = new float[dimension];
+    memcpy(row, other.row, dimension * sizeof(float));
+    return *this;
+}
+
+float& Row::operator[] (size_t index) {
     return row[index];
 }
 
@@ -64,7 +79,7 @@ DenseMatrix::DenseMatrix(string matrixName) {
     memcpy(&dimension, tempBuffer + sizeof(size_t), sizeof(size_t));
 }
 
-Row& DenseMatrix::operator[] (size_t _row) {
+Row DenseMatrix::operator[] (size_t _row) {
     size_t pageIndex = _row / getVectorNumOfOnePage(dimension);
     size_t vectorIndex = _row % getVectorNumOfOnePage(dimension);
     int freeIndex = getPageIndex(pageIndex);
@@ -78,7 +93,8 @@ Row& DenseMatrix::operator[] (size_t _row) {
     used[freeIndex] = 1;
     page[freeIndex] = pageIndex;
     size_t head = vectorIndex * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
-    return *(new DenseRow(dimension, _row, getPageBuffer(freeIndex) + head));
+    //return *(new Row(dimension, _row, getPageBuffer(freeIndex) + head));
+    return Row(dimension, _row, getPageBuffer(freeIndex) + head);
 }
 
 size_t DenseMatrix::getVectorNumOfOnePage(size_t dimension) {
@@ -191,7 +207,7 @@ Matrix& dot(string newMatrixName, Matrix& A, Matrix& B) {
     size_t p = A.getColumn();
     DenseMatrix C(newMatrixName, m, n);
     for (size_t i = 0; i != m; ++i) {
-        DenseRow row(n, i);
+        Row row(n, i);
         for (size_t j = 0; j != n; ++j) {
             row[j] = 0;
             for (size_t k = 0; k != p; ++k) {
@@ -219,7 +235,7 @@ Matrix& DenseMatrix::transpose(string newMatrixName) {
     size_t n = getColumn();
     DenseMatrix C(newMatrixName, m, n);
     for (size_t i = 0; i != m; ++i) {
-        DenseRow row(n, i);
+        Row row(n, i);
         for (size_t j = 0; j != n; ++j) {
             row[j] = (*this)[j][i];
         }
