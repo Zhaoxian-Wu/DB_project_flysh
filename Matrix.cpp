@@ -47,7 +47,7 @@ DenseMatrix::DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension
     size_t full = 0;
     for (size_t i = 0; i < pageNum; i++) {
         for (size_t j = 0; j < needNumOfSize; j++) {
-            file.write(&full, sizeof(full));
+            file.write(reinterpret_cast<char*>(&full), sizeof(full));
         }
     }
 }
@@ -150,7 +150,7 @@ DenseMatrix::~DenseMatrix() {
 void DenseMatrix::showPage(int pageNum) {
     size_t head = pageNum * PAGE_SIZE + FILE_HEAD_SIZE;
     size_t tail = 0;
-    char* tempBuffer = new char[PAGE_SIZE];
+    char tempBuffer[PAGE_SIZE];
     file.seekg(head, ios::beg);
     file.read(tempBuffer, PAGE_SIZE);
     tail = PAGE_SIZE - sizeof(size_t) - 1;
@@ -177,7 +177,6 @@ void DenseMatrix::showPage(int pageNum) {
             i++;
         }
     }
-    delete[] tempBuffer;
 }
 
 DenseMatrix* DenseMatrix::usedMatrix[PAGE_NUMBER] = { nullptr };
