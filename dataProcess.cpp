@@ -1,11 +1,14 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#include <iostream>
 
 #include "Matrix.h"
 
 #define PI 3.14159265
 #define MEAN 100
+
+using namespace std;
 
 // 2.预处理后的数据。
 // Preprocess
@@ -32,6 +35,7 @@ void preProcess(string dataSet) {
             row[j] = sMatrix[i][j] * MEAN / rowMean;
         }
         pMatrix.setRow(row);
+        cout << "row " << i << endl;
     }
     pMatrix.showPage(1);
 }
@@ -40,11 +44,11 @@ void preProcess(string dataSet) {
 // build a gaussion projection matrix
 // compute a gaussion distribution randomly
 float GaussionDistribution() {
-    return sqrt(-2.0 * log(rand() / (RAND_MAX + 1.0))) * cos(2.0 * PI * (rand() / (RAND_MAX + 1.0)));
+    return (float)(sqrt(-2.0 * log(rand() / (RAND_MAX + 1.0))) * cos(2.0 * PI * (rand() / (RAND_MAX + 1.0))));
 }
 
 void GaussionMatrix(string dataSet, size_t m, size_t dim) {
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
     DenseMatrix gaussMatrix(dataSet + "_gaussMatrix", m, dim);
     for (int i = 0; i < m; ++i) {
         Row row(dim, i, nullptr);
@@ -57,10 +61,10 @@ void GaussionMatrix(string dataSet, size_t m, size_t dim) {
 
 // build a fly projection matrix using a given probability p
 void FlyMatrix(string dataSet, size_t m, size_t dim, float p) {
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
     DenseMatrix flyMatrix(dataSet + "_flyMatrix", m, dim);
     // number of "1"
-    int d = dim * p;
+    int d = (int) (dim * p);
     for (size_t i = 0; i < dim; ++i) {
         Row row(dim, i, nullptr);
         for (int count = 0; count < d; ) {

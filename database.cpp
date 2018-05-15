@@ -4,27 +4,28 @@
 #include <string>
 #include <vector> 
 
+#include "compileOption.h"
+
 #define PAGE_NUMBER 50
 #define PAGE_SIZE (64 * 1024)
 
-//#define DATA_SET "mnist"
-//#define FILE_DIMENSION 784
-//#define PAGE_VECTOR_NUM 20
+#define DATA_SET "mnist"
+#define SOURCE_NAME "datadir/mnist_source"
+#define FILE_DIMENSION 784
+#define PAGE_VECTOR_NUM 20
 
-#define DATA_SET "glove"
-#define FILE_DIMENSION 300
-#define PAGE_VECTOR_NUM 54
+//#define DATA_SET "glove"
+//#define FILE_DIMENSION 300
+//#define PAGE_VECTOR_NUM 54
 
 using namespace std;
-
-#define GENERATE
 
 #ifdef GENERATE
 void savePage (string filePath, size_t currentPage, size_t size, float vectorSet[PAGE_VECTOR_NUM][FILE_DIMENSION], size_t bitMap[PAGE_VECTOR_NUM], size_t id[PAGE_VECTOR_NUM]);
 
 void savePage (string filePath, size_t currentPage, size_t size, float vectorSet[PAGE_VECTOR_NUM][FILE_DIMENSION], size_t bitMap[PAGE_VECTOR_NUM], size_t id[PAGE_VECTOR_NUM]) {
 	fstream in;
-	in.open("source", ios::out | ios::binary | ios::app);
+	in.open(SOURCE_NAME, ios::out | ios::binary | ios::app);
 	char buffer[PAGE_SIZE];
 	size_t head = 0;
 	size_t tail = PAGE_SIZE - (21 * sizeof(size_t)) - 1;
@@ -48,7 +49,7 @@ void savePage (string filePath, size_t currentPage, size_t size, float vectorSet
 
 int main() {
     fstream in;
-    in.open("source", ios::out | ios::binary);
+    in.open(SOURCE_NAME, ios::out | ios::binary);
     in.seekp(0, ios::beg);
     char fileHead[sizeof(size_t) * 2];
     in.write(fileHead, sizeof(size_t) * 2);
@@ -91,9 +92,9 @@ int main() {
     	
         if (tempVectorNum == PAGE_VECTOR_NUM) {
             currentPage++;
-            //cout << " \n current page" << currentPage << endl;
             savePage("", currentPage, tempVectorNum, tempVectorSet, tempBitMap, tempId);
             tempVectorNum = 0;
+            cout << "current page" << currentPage << endl;
         }
         if (out.eof()) {
         	break;
@@ -101,9 +102,10 @@ int main() {
     }
     if (tempVectorNum != 0) {
         savePage("", currentPage, tempVectorNum, tempVectorSet, tempBitMap, tempId);
+        cout << "current page" << currentPage << endl;
     }
     out.close();
-    in.open("source", ios::out | ios::binary | ios::in);
+    in.open(SOURCE_NAME, ios::out | ios::binary | ios::in);
     in.seekp(0, ios::beg);
     memcpy(fileHead, reinterpret_cast<char*>(&currentVector), sizeof(size_t));
     memcpy(fileHead + sizeof(size_t), reinterpret_cast<char*>(&dimension), sizeof(size_t));

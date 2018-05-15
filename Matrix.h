@@ -87,4 +87,4 @@ private:
     int used[PAGE_NUMBER];
 };
 
-Matrix& dot(string, Matrix&, Matrix&);
+void dot(string, Matrix&, Matrix&);

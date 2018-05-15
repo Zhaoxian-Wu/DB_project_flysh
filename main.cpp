@@ -1,21 +1,18 @@
 #include <ctime>
 
+#include "compileOption.h"
 #include "Matrix.h"
-
-//#define PROCESS
-//#define TEST_TIME
-//#define DISPLAY_RESULT
 
 #ifdef PROCESS
 #include "dataProcess.h"
 int main() {
     string dataset[] = {
-        "glove",
-        "mnist"
+        "mnist",
+        //"glove"
     };
     srand((unsigned)time(NULL));
-    for (int i = 0; i != 2; ++i) {
-        Matrix& M = DenseMatrix(dataset[i]);
+    for (int i = 0; i != 1; ++i) {
+        DenseMatrix M(dataset[i]);
         size_t vecCount = M.getRow();
         size_t dimension = M.getColumn();
 
@@ -24,10 +21,10 @@ int main() {
         preProcess(dataset[i]);
 
         // 3.高斯投影矩阵和果蝇投影矩阵。
-        GaussionProjection(dataset[i], vecCount, dimension);
+        GaussionMatrix(dataset[i], vecCount, dimension);
 
         // build a fly projection matrix using a given probability p
-        FlyProjection(dataset[i], vecCount, dimension, 0.1);
+        FlyMatrix(dataset[i], vecCount, dimension, 0.1);
 
         // 4.使用高斯投影矩阵哈希后的数据。
         // build matrix after gaussion project
@@ -92,3 +89,12 @@ int main() {
     DenseMatrix(set + "_binaryMatrix").showPage(1);
 }
 #endif // DISPLAY_RESULT
+
+
+#ifdef OTHER
+int main() {
+    //DenseMatrix M("mnist_source");
+    DenseMatrix M("mnist_preProcess");
+    M.showPage(0);
+}
+#endif // OTHER

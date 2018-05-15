@@ -128,21 +128,23 @@ DenseMatrix::DenseMatrix(string matrixName) {
 }
 
 Row DenseMatrix::operator[] (size_t _row) {
-    size_t pageIndex = _row / getVectorNumOfOnePage(dimension);
+    size_t myPageIndex = _row / getVectorNumOfOnePage(dimension);
     size_t vectorIndex = _row % getVectorNumOfOnePage(dimension);
-    int freeIndex = getPageIndex(pageIndex);
-    if (freeIndex == -1) {
-        size_t head = pageIndex * PAGE_SIZE + FILE_HEAD_SIZE;
+    int pageIndex = getPageIndex(myPageIndex);
+    if (pageIndex == -1) {
+        pageIndex = getFreePageIndex();
+        size_t head = myPageIndex * PAGE_SIZE + FILE_HEAD_SIZE;
         file.seekg(head, ios::beg);
-        freeIndex = getFreePageIndex();
-        file.read(buffer[freeIndex], PAGE_SIZE);
+        file.read(buffer[pageIndex], PAGE_SIZE);
+        if (file.bad()) {
+            cout << "bad: " << __LINE__ << endl;
+        }
+        usedMatrix[pageIndex] = this;
+        used[pageIndex] = 1;
+        page[pageIndex] = pageIndex;
     }
-    usedMatrix[freeIndex] = this;
-    used[freeIndex] = 1;
-    page[freeIndex] = pageIndex;
     size_t head = vectorIndex * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
-    //return *(new Row(dimension, _row, getPageBuffer(freeIndex) + head));
-    return Row(dimension, _row, getPageBuffer(freeIndex) + head);
+    return Row(dimension, _row, getPageBuffer(pageIndex) + head);
 }
 
 size_t DenseMatrix::getVectorNumOfOnePage(size_t dimension) {
@@ -180,6 +182,12 @@ void DenseMatrix::removeSelfFromBuffer(size_t pageIndex) {
     size_t myPageIndex = page[pageIndex];
     size_t head = myPageIndex * PAGE_SIZE + FILE_HEAD_SIZE;
     usedMatrix[pageIndex] = nullptr;
+    if (file.eof()) {
+        cout << "eof" << endl;
+    }
+    if (file.bad()) {
+        cout << "bad" << endl;
+    }
     file.seekp(head, ios::beg);
     file.write(buffer[pageIndex], PAGE_SIZE);
 }
@@ -252,7 +260,7 @@ const string DenseMatrix::dir = "dataDir/";
 char DenseMatrix::buffer[PAGE_NUMBER][PAGE_SIZE] = {};
 size_t DenseMatrix::page[PAGE_NUMBER] = {};
 
-Matrix& dot(string newMatrixName, Matrix& A, Matrix& B) {
+void dot(string newMatrixName, Matrix& A, Matrix& B) {
     assert(A.getColumn() == B.getRow());
     size_t m = A.getRow();
     size_t n = B.getColumn();
@@ -272,7 +280,6 @@ Matrix& dot(string newMatrixName, Matrix& A, Matrix& B) {
             C.setRow(row);
         }
     }
-    return C;
 }
 
 float Row::dist(Row& a, Row& b) {
