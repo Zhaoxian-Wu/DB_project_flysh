@@ -16,18 +16,10 @@ public:
     ~Row();
     float& operator[] (size_t);
     Row& operator=(const Row&);
-    float* getBuffer() {
-        return row;
-    }
-    void setID(size_t _id) {
-        id = _id;
-    }
-    size_t getID() {
-        return id;
-    };
-    size_t getColumn() {
-        return dimension;
-    }
+    float* getBuffer();
+    void setID(size_t _id);
+    size_t getID();
+    size_t getColumn();
 private:
     float* row;
     size_t dimension;

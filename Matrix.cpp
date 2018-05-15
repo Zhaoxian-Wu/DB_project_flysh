@@ -43,6 +43,22 @@ float& Row::operator[] (size_t index) {
     return row[index];
 }
 
+float* Row::getBuffer() {
+    return row;
+}
+
+void Row::setID(size_t _id) {
+    id = _id;
+}
+
+size_t Row::getID() {
+    return id;
+};
+
+size_t Row::getColumn() {
+    return dimension;
+}
+
 DenseMatrix::DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension) {
     for (int i = 0; i < PAGE_NUMBER; i++) {
         used[i] = 0;
