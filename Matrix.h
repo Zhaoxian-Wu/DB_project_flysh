@@ -97,6 +97,7 @@ private:
     static char buffer[PAGE_NUMBER][PAGE_SIZE];		//buffer page
     static size_t page[PAGE_NUMBER];				//page id of matrix
     static DenseMatrix* usedMatrix[PAGE_NUMBER];	//matrix who used this page
+    static const size_t FILE_HEAD_SIZE = 8;
     static const string dir;
 
     fstream file;
