@@ -257,13 +257,17 @@ Matrix& dot(string newMatrixName, Matrix& A, Matrix& B) {
     size_t m = A.getRow();
     size_t n = B.getColumn();
     size_t p = A.getColumn();
+    B.transpose("temp");
+    DenseMatrix temp("temp");
     DenseMatrix C(newMatrixName, m, n);
     for (size_t i = 0; i != m; ++i) {
         Row row(n, i);
         for (size_t j = 0; j != n; ++j) {
+            Row aRow = A[i];
+            Row bCol = temp[j];
             row[j] = 0;
             for (size_t k = 0; k != p; ++k) {
-                row[j] += A[i][k] * B[k][j];
+                row[j] += aRow[k] * bCol[k];
             }
             C.setRow(row);
         }
@@ -282,16 +286,15 @@ float Row::dist(Row& a, Row& b) {
     return (float)sqrt(res);
 }
 
-Matrix& DenseMatrix::transpose(string newMatrixName) {
+void DenseMatrix::transpose(string newMatrixName) {
     size_t m = getRow();
     size_t n = getColumn();
-    DenseMatrix C(newMatrixName, m, n);
-    for (size_t i = 0; i != m; ++i) {
-        Row row(n, i);
-        for (size_t j = 0; j != n; ++j) {
+    DenseMatrix C(newMatrixName, n, m);
+    for (size_t i = 0; i != n; ++i) {
+        Row row(m, i);
+        for (size_t j = 0; j != m; ++j) {
             row[j] = (*this)[j][i];
         }
-        this->setRow(row);
+        C.setRow(row);
     }
-    return C;
 }

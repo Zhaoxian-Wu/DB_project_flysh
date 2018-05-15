@@ -37,7 +37,7 @@ private:
 class Matrix {
 public:
     virtual Row operator[] (size_t) = 0;
-    virtual Matrix& transpose(string) = 0;
+    virtual void transpose(string) = 0;
     size_t getRow() {
         return row;
     }
@@ -56,7 +56,7 @@ public:
     ~DenseMatrix();
 
     Row operator[] (size_t);
-    Matrix& transpose(string);
+   void transpose(string);
 
     void setRow(Row& row);
 

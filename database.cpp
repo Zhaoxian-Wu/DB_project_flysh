@@ -7,13 +7,19 @@
 #define PAGE_NUMBER 50
 #define PAGE_SIZE (64 * 1024)
 
-#define FILE_DIMENSION 784
-#define PAGE_VECTOR_NUM 20
+//#define DATA_SET "mnist"
+//#define FILE_DIMENSION 784
+//#define PAGE_VECTOR_NUM 20
 
-//#include "Matrix.h"
+#define DATA_SET "glove"
+#define FILE_DIMENSION 300
+#define PAGE_VECTOR_NUM 54
 
 using namespace std;
 
+#define GENERATE
+
+#ifdef GENERATE
 void savePage (string filePath, size_t currentPage, size_t size, float vectorSet[PAGE_VECTOR_NUM][FILE_DIMENSION], size_t bitMap[PAGE_VECTOR_NUM], size_t id[PAGE_VECTOR_NUM]);
 
 void savePage (string filePath, size_t currentPage, size_t size, float vectorSet[PAGE_VECTOR_NUM][FILE_DIMENSION], size_t bitMap[PAGE_VECTOR_NUM], size_t id[PAGE_VECTOR_NUM]) {
@@ -40,7 +46,6 @@ void savePage (string filePath, size_t currentPage, size_t size, float vectorSet
 	in.close();
 }
 
-
 int main() {
     fstream in;
     in.open("source", ios::out | ios::binary);
@@ -63,7 +68,7 @@ int main() {
     size_t tempi;
     fstream out;
     string tempStr;
-    out.open("mnist", ios::in | ios::binary);
+    out.open(DATA_SET, ios::in | ios::binary);
     while (getline(out, tempStr, ' ')) {
 //    	cout << tempFloatNum << ' ' << tempStr << ' ';
     	if (tempFloatNum == -1) {
@@ -105,95 +110,4 @@ int main() {
     in.write(fileHead, sizeof(size_t) * 2);
     in.close();
 }
-
-
-//void savePage (string filePath, size_t currentPage, size_t size, float vectorSet[PAGE_VECTOR_NUM][FILE_DIMENSION], size_t bitMap[PAGE_VECTOR_NUM], size_t id[PAGE_VECTOR_NUM]);
-//
-//void savePage (string filePath, size_t currentPage, size_t size, float vectorSet[PAGE_VECTOR_NUM][FILE_DIMENSION], size_t bitMap[PAGE_VECTOR_NUM], size_t id[PAGE_VECTOR_NUM]) {
-//	fstream in;
-//	in.open("mnist10k", ios::out | ios::binary | ios::app);
-//	char buffer[PAGE_SIZE];
-//	int head = 0;
-//	int tail = PAGE_SIZE - (21 * sizeof(size_t));
-//	for (int i = 0; i < PAGE_VECTOR_NUM; i++) {
-//		int tempi = id[i];
-//		memcpy(buffer + head, reinterpret_cast<char*>(&tempi), sizeof(size_t));
-//		head += sizeof(int);
-//		for (int j = 0; j < FILE_DIMENSION; j++) {
-//			float tempf = vectorSet[i][j];
-//			memcpy(buffer + head, reinterpret_cast<char*>(&tempf), sizeof(float));
-//			head += sizeof(float);
-//		}
-//		tempi = bitMap[i];
-//		memcpy(buffer + tail, reinterpret_cast<char*>(&tempi), sizeof(size_t));
-//		tail += sizeof(int);
-//	}
-//	memcpy(buffer + tail, reinterpret_cast<char*>(&size), sizeof(size_t));
-//	in.write(buffer, PAGE_SIZE);
-//	in.close();
-//}
-
-
-//int main() {
-//    fstream in;
-//    in.open("mnist10k", ios::out | ios::binary);
-//    in.seekp(0, ios::beg);
-//    char fileHead[sizeof(size_t) * 2];
-//    in.write(fileHead, sizeof(size_t) * 2);
-//    in.close();
-//    size_t currentPage = 0;
-//    int currentVector = 0;
-//    int dimension = FILE_DIMENSION;
-//    float tempVectorSet[PAGE_VECTOR_NUM][FILE_DIMENSION] = { { 0 } };
-//    int tempVectorNum = 0;
-//    int tempFloatNum = 0;
-//    size_t tempBitMap[PAGE_VECTOR_NUM] = { 0 };
-//    size_t tempId[PAGE_VECTOR_NUM] = { 0 };
-//    int tempSize = 0;
-//
-//    char tempc;
-//    float tempf;
-//    int tempi;
-//    fstream out;
-//    string tempStr;
-//    out.open("mnist10k.txt", ios::in | ios::binary);
-//    while (getline(out, tempStr, ',')) {
-////    	cout << tempFloatNum << ' ' << tempStr << ' ';
-//    	if (tempFloatNum != FILE_DIMENSION - 2) {
-//            cout << tempStr << " " << tempFloatNum << ' ';
-//            tempVectorSet[tempVectorNum][tempFloatNum] = atof(tempStr.c_str());
-//            tempFloatNum++;
-//            //			cout << tempStr << ' ';
-//        } else {
-//        	
-//            //cout << "write page" << ' ' << tempc << " " << tempf << ' ';
-//            //			cout << "float number : " << tempFloatNum << endl;
-//            cout << tempStr << " " << tempFloatNum << ' ';
-//            
-//            tempVectorSet[tempVectorNum][tempFloatNum] = atof(tempStr.c_str());
-//            tempFloatNum = 0;
-//            tempId[tempVectorNum] = currentVector;
-//            tempBitMap[tempVectorNum] = 1;
-//            tempVectorNum++;
-//            currentVector++;
-//        }
-//    	
-//        if (tempVectorNum == PAGE_VECTOR_NUM) {
-//            currentPage++;
-//            cout << " \n current page" << currentPage << endl;
-//            savePage("", currentPage, tempVectorNum, tempVectorSet, tempBitMap, tempId);
-//            tempVectorNum = 0;
-//        }
-//    }
-//    if (tempVectorNum != 0) {
-//        savePage("", currentPage, tempVectorNum, tempVectorSet, tempBitMap, tempId);
-//    }
-//    out.close();
-//    cout << currentVector << ' ' << dimension;
-//    in.open("mnist10k", ios::out | ios::binary | ios::in);
-//    in.seekp(0, ios::beg);
-//    memcpy(fileHead, reinterpret_cast<char*>(&currentVector), sizeof(size_t));
-//    memcpy(fileHead + sizeof(size_t), reinterpret_cast<char*>(&dimension), sizeof(size_t));
-//    in << currentVector << dimension;
-//    in.close();
-//}
+#endif // GENERATE

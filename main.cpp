@@ -4,7 +4,7 @@
 
 //#define PROCESS
 //#define TEST_TIME
-#define DISPLAY_RESULT
+//#define DISPLAY_RESULT
 
 #ifdef PROCESS
 #include "dataProcess.h"
