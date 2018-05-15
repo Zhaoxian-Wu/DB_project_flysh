@@ -9,7 +9,7 @@
 
 using namespace std;
 
-Row::Row(Row& other) {
+Row::Row(const Row& other) {
     *this = other;
 }
 
@@ -30,7 +30,6 @@ Row::~Row() {
 
 Row& Row::operator=(const Row&other) {
     dimension = other.dimension;
-    id = other.id;
     if (row) {
         delete[] row;
     }
@@ -43,22 +42,6 @@ float& Row::operator[] (size_t index) {
     return row[index];
 }
 
-float* Row::getBuffer() {
-    return row;
-}
-
-void Row::setID(size_t _id) {
-    id = _id;
-}
-
-size_t Row::getID() {
-    return id;
-};
-
-size_t Row::getColumn() {
-    return dimension;
-}
-
 DenseMatrix::DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension) {
     for (int i = 0; i < PAGE_NUMBER; i++) {
         used[i] = 0;
@@ -66,21 +49,70 @@ DenseMatrix::DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension
     string f = dir + matrixName;
     row = _vectorNum;
     dimension = _dimension;
-    file.open(f.c_str(), ios::in | ios::out | ios::binary);
+    file.open(f.c_str(), ios::out | ios::binary | ios::app);
+    //write the head of file
     char fileHead[FILE_HEAD_SIZE];
     memcpy(fileHead, reinterpret_cast<char*>(&row), sizeof(size_t));
     memcpy(fileHead + sizeof(size_t), reinterpret_cast<char*>(&dimension), sizeof(size_t));
     file.write(fileHead, sizeof(size_t) * 2);
-
+    //
     size_t vectorNumOfOnePage = getVectorNumOfOnePage(dimension);
-    size_t pageNum = row / vectorNumOfOnePage + 1;
-    int needNumOfSize = PAGE_SIZE / sizeof(int);
-    size_t full = 0;
+    size_t pageNum = row / vectorNumOfOnePage;
+    size_t needNumOfSize = PAGE_SIZE / sizeof(size_t);
+    
+    size_t currentVector = 0;
+	char buffer[PAGE_SIZE];
+	size_t vectorNum = 0;
+    size_t tempi = 1;
+    float tempf = 0;
+    //save page
     for (size_t i = 0; i < pageNum; i++) {
-        for (size_t j = 0; j < needNumOfSize; j++) {
-            file.write(reinterpret_cast<char*>(&full), sizeof(full));
+		size_t head = 0;
+		size_t tail = PAGE_SIZE - ((vectorNumOfOnePage + 1) * sizeof(size_t)) - 1;
+    	//write the vector
+        for (size_t j = 0; j < vectorNumOfOnePage; j++) {
+        	//write the vector id
+        	memcpy(buffer + head, reinterpret_cast<char*>(&currentVector), sizeof(size_t));
+        	head += sizeof(size_t);
+        	currentVector++;
+        	//write the vector
+        	for (int k = 0; k < dimension; k++) {
+        		memcpy(buffer + head, reinterpret_cast<char*>(&tempf), sizeof(float));
+        		head += sizeof(float);
+			}
+			//write the bit map
+			memcpy(buffer + tail, reinterpret_cast<char*>(&tempi), sizeof(size_t));
+			tail += sizeof(size_t);
         }
+        //write vector number of page
+		memcpy(buffer + tail, reinterpret_cast<char*>(&vectorNumOfOnePage), sizeof(size_t));
+		file.write(buffer, PAGE_SIZE);
     }
+    size_t restVector = row - pageNum * vectorNumOfOnePage;
+    if (restVector != 0) {
+    	size_t head = 0;
+		size_t tail = PAGE_SIZE - ((restVector + 1) * sizeof(size_t)) - 1;
+    	//write the vector
+        for (size_t j = 0; j < restVector; j++) {
+        	//write the vector id
+        	memcpy(buffer + head, reinterpret_cast<char*>(&currentVector), sizeof(size_t));
+        	head += sizeof(size_t);
+        	currentVector++;
+        	//write the vector
+        	for (int k = 0; k < dimension; k++) {
+        		memcpy(buffer + head, reinterpret_cast<char*>(&tempf), sizeof(float));
+        		head += sizeof(float);
+			}
+			//write the bit map
+			memcpy(buffer + tail, reinterpret_cast<char*>(&tempi), sizeof(size_t));
+			tail += sizeof(size_t);
+        }
+        //write vector number of page
+		memcpy(buffer + tail, reinterpret_cast<char*>(&restVector), sizeof(size_t));
+		file.write(buffer, PAGE_SIZE);
+	}
+    file.close();
+    file.open(f.c_str(), ios::in | ios::out | ios::binary);
 }
 
 DenseMatrix::DenseMatrix(string matrixName) {
@@ -147,6 +179,7 @@ void DenseMatrix::removeSelfFromBuffer(size_t pageIndex) {
     used[pageIndex] = 0;
     size_t myPageIndex = page[pageIndex];
     size_t head = myPageIndex * PAGE_SIZE + FILE_HEAD_SIZE;
+    usedMatrix[pageIndex] = nullptr;
     file.seekp(head, ios::beg);
     file.write(buffer[pageIndex], PAGE_SIZE);
 }
@@ -154,20 +187,23 @@ void DenseMatrix::removeSelfFromBuffer(size_t pageIndex) {
 void DenseMatrix::setRow(Row& row) {
     assert(row.getColumn() == this->dimension);
     size_t id = row.getID();
-    size_t pageIndex = id / getVectorNumOfOnePage(dimension);
+    //get pageIndex of Matrix
+    size_t myPageIndex = id / getVectorNumOfOnePage(dimension);
     size_t vectorIndex = id % getVectorNumOfOnePage(dimension);
-    int freeIndex = getPageIndex(row.getID());
-    if (freeIndex == -1) {
-        size_t head = pageIndex * PAGE_SIZE + FILE_HEAD_SIZE;
+    //get pageIndex of buffer
+    int pageIndex = getPageIndex(myPageIndex);
+    //if this page not in buffer
+    if (pageIndex == -1) {
+        size_t head = myPageIndex * PAGE_SIZE + FILE_HEAD_SIZE;
         file.seekg(head, ios::beg);
-        freeIndex = getFreePageIndex();
-        file.read(buffer[freeIndex], PAGE_SIZE);
-        usedMatrix[freeIndex] = this;
-        used[freeIndex] = 1;
-        page[freeIndex] = pageIndex;
+        pageIndex = getFreePageIndex();
+        file.read(buffer[pageIndex], PAGE_SIZE);
+        usedMatrix[pageIndex] = this;
+        used[pageIndex] = 1;
+        page[pageIndex] = myPageIndex;
     }
     size_t head = vectorIndex * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
-    memcpy(getPageBuffer(freeIndex) + head, row.getBuffer(), dimension * sizeof(float));
+    memcpy(getPageBuffer(pageIndex) + head, row.getBuffer(), dimension * sizeof(float));
 }
 
 DenseMatrix::~DenseMatrix() {
@@ -198,11 +234,11 @@ void DenseMatrix::showPage(int pageNum) {
         tail += sizeof(size_t);
         if (tempS == 1) {
             memcpy(&tempS, reinterpret_cast<size_t*>(tempBuffer + head), sizeof(size_t));
-            cout << "id: " << tempS << ',';
+            cout << "id: " << tempS << ' ';
             head += sizeof(size_t);
             for (size_t j = 0; j < dimension; j++) {
                 memcpy(&tempF, reinterpret_cast<float*>(tempBuffer + head), sizeof(float));
-                cout << tempF << ' ';
+                cout << tempF << ',';
                 head += sizeof(float);
             }
             cout << endl;

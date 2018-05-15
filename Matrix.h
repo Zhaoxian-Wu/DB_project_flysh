@@ -11,15 +11,23 @@ using std::string;
 class Row {
 public:
     static float dist(Row&, Row&);
-    Row(Row&);
+    Row(const Row&);
     Row(size_t _dimension, size_t _id, char* _buffer);
     ~Row();
     float& operator[] (size_t);
     Row& operator=(const Row&);
-    float* getBuffer();
-    void setID(size_t _id);
-    size_t getID();
-    size_t getColumn();
+    float* getBuffer() {
+        return row;
+    }
+    void setID(size_t _id) {
+        id = _id;
+    }
+    size_t getID() {
+        return id;
+    };
+    size_t getColumn() {
+        return dimension;
+    }
 private:
     float* row;
     size_t dimension;
@@ -72,7 +80,7 @@ private:
     static char buffer[PAGE_NUMBER][PAGE_SIZE];		//buffer page
     static size_t page[PAGE_NUMBER];				//page id of matrix
     static DenseMatrix* usedMatrix[PAGE_NUMBER];	//matrix who used this page
-    static const size_t FILE_HEAD_SIZE = 8;
+    static const size_t FILE_HEAD_SIZE = sizeof(size_t) * 2;
     static const string dir;
 
     fstream file;
