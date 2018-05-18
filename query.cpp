@@ -1,10 +1,9 @@
-#include <cstddef>
 #include "Matrix.h"
 
 class ID_DIST_PAIR {
 public:
     size_t id;
-    unsigned dist;
+    float dist;
     ID_DIST_PAIR() : id(0), dist(0) {}
     ID_DIST_PAIR(size_t k, float distance) : id(k), dist(distance) {}
     ID_DIST_PAIR(const ID_DIST_PAIR& pair) : id(pair.id), dist(pair.dist) {}

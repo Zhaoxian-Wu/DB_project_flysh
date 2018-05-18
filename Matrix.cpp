@@ -55,8 +55,14 @@ DenseMatrix::DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension
     memcpy(fileHead, reinterpret_cast<char*>(&row), sizeof(size_t));
     memcpy(fileHead + sizeof(size_t), reinterpret_cast<char*>(&dimension), sizeof(size_t));
     file.write(fileHead, sizeof(size_t) * 2);
+	if (file.bad()) {
+		cout << "bad: " << __LINE__ << endl;
+	}
+	if (file.fail()) {
+		cout << "fail" << endl;
+	}
     //
-    size_t vectorNumOfOnePage = getVectorNumOfOnePage(dimension);
+    size_t vectorNumOfOnePage = getVectorNumPerPage(dimension);
     size_t pageNum = row / vectorNumOfOnePage;
     size_t needNumOfSize = PAGE_SIZE / sizeof(size_t);
     
@@ -87,6 +93,12 @@ DenseMatrix::DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension
         //write vector number of page
 		memcpy(buffer + tail, reinterpret_cast<char*>(&vectorNumOfOnePage), sizeof(size_t));
 		file.write(buffer, PAGE_SIZE);
+		if (file.bad()) {
+			cout << "bad: " << __LINE__ << endl;
+		}
+		if (file.fail()) {
+			cout << "fail" << endl;
+		}
     }
     size_t restVector = row - pageNum * vectorNumOfOnePage;
     if (restVector != 0) {
@@ -110,6 +122,12 @@ DenseMatrix::DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension
         //write vector number of page
 		memcpy(buffer + tail, reinterpret_cast<char*>(&restVector), sizeof(size_t));
 		file.write(buffer, PAGE_SIZE);
+		if (file.bad()) {
+			cout << "bad: " << __LINE__ << endl;
+		}
+		if (file.fail()) {
+			cout << "fail" << endl;
+		}
 	}
     file.close();
     file.open(f.c_str(), ios::in | ios::out | ios::binary);
@@ -121,37 +139,52 @@ DenseMatrix::DenseMatrix(string matrixName) {
     }
     file.open((dir + matrixName).c_str(), ios::out | ios::in | ios::binary);
     char tempBuffer[sizeof(size_t) * 2];
+	if (file.fail()) {
+		cout << "fail" << endl;
+	}
     file.seekg(0, ios::beg);
+	if (file.fail()) {
+		cout << "fail" << endl;
+	}
     file.read(tempBuffer, sizeof(size_t) * 2);
+	if (file.fail()) {
+		cout << "fail" << endl;
+	}
+	if (file.bad()) {
+		cout << "bad: " << __LINE__ << endl;
+	}
     memcpy(&row, tempBuffer, sizeof(size_t));
     memcpy(&dimension, tempBuffer + sizeof(size_t), sizeof(size_t));
 }
 
 Row DenseMatrix::operator[] (size_t _row) {
-    size_t myPageIndex = _row / getVectorNumOfOnePage(dimension);
-    size_t vectorIndex = _row % getVectorNumOfOnePage(dimension);
-    int pageIndex = getPageIndex(myPageIndex);
-    if (pageIndex == -1) {
-        pageIndex = getFreePageIndex();
-        size_t head = myPageIndex * PAGE_SIZE + FILE_HEAD_SIZE;
+    size_t PageInDisk = _row / getVectorNumPerPage(dimension);
+    size_t vectorIndex = _row % getVectorNumPerPage(dimension);
+    int pageInBuffer = getPageIndexInBuffer(PageInDisk);
+    if (pageInBuffer == -1) {
+        pageInBuffer = getFreePageIndex();
+        size_t head = PageInDisk * PAGE_SIZE + FILE_HEAD_SIZE;
         file.seekg(head, ios::beg);
-        file.read(buffer[pageIndex], PAGE_SIZE);
+        file.read(buffer[pageInBuffer], PAGE_SIZE);
         if (file.bad()) {
             cout << "bad: " << __LINE__ << endl;
         }
-        usedMatrix[pageIndex] = this;
-        used[pageIndex] = 1;
-        page[pageIndex] = pageIndex;
+		if (file.fail()) {
+			cout << "fail" << endl;
+		}
+        usedMatrix[pageInBuffer] = this;
+        used[pageInBuffer] = true;
+        page[pageInBuffer] = PageInDisk;
     }
     size_t head = vectorIndex * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
-    return Row(dimension, _row, getPageBuffer(pageIndex) + head);
+    return Row(dimension, _row, getPageBuffer(pageInBuffer) + head);
 }
 
-size_t DenseMatrix::getVectorNumOfOnePage(size_t dimension) {
+size_t DenseMatrix::getVectorNumPerPage(size_t dimension) {
     return (PAGE_SIZE - sizeof(size_t)) / (sizeof(float) * dimension + sizeof(size_t) * 2);
 }
 
-int DenseMatrix::getPageIndex(size_t pageNum) {
+int DenseMatrix::getPageIndexInBuffer(size_t pageNum) {
     for (int i = 0; i < PAGE_NUMBER; i++) {
         if (page[i] == pageNum) {
             if (used[i] == 1) {
@@ -177,46 +210,53 @@ int DenseMatrix::getFreePageIndex() {
     return tempIndex;
 }
 
-void DenseMatrix::removeSelfFromBuffer(size_t pageIndex) {
-    used[pageIndex] = 0;
-    size_t myPageIndex = page[pageIndex];
-    size_t head = myPageIndex * PAGE_SIZE + FILE_HEAD_SIZE;
-    usedMatrix[pageIndex] = nullptr;
-    if (file.eof()) {
-        cout << "eof" << endl;
-    }
-    if (file.bad()) {
-        cout << "bad" << endl;
-    }
+void DenseMatrix::removeSelfFromBuffer(size_t pageInBuffer) {
+    used[pageInBuffer] = false;
+    usedMatrix[pageInBuffer] = nullptr;
+    size_t head = page[pageInBuffer] * PAGE_SIZE + FILE_HEAD_SIZE;
     file.seekp(head, ios::beg);
-    file.write(buffer[pageIndex], PAGE_SIZE);
+    file.write(buffer[pageInBuffer], PAGE_SIZE);
+	if (file.bad()) {
+		cout << file.tellp() << endl
+			<< "bad: " << __LINE__ << endl;
+	}
+	if (file.fail()) {
+		cout << "fail" << endl;
+	}
 }
 
 void DenseMatrix::setRow(Row& row) {
     assert(row.getColumn() == this->dimension);
     size_t id = row.getID();
     //get pageIndex of Matrix
-    size_t myPageIndex = id / getVectorNumOfOnePage(dimension);
-    size_t vectorIndex = id % getVectorNumOfOnePage(dimension);
+	size_t vectorPerPage = getVectorNumPerPage(dimension);
+    size_t pageInDisk = id / vectorPerPage;
+    size_t vectorIndexInPage = id % vectorPerPage;
     //get pageIndex of buffer
-    int pageIndex = getPageIndex(myPageIndex);
+    int pageInBuffer = getPageIndexInBuffer(pageInDisk);
     //if this page not in buffer
-    if (pageIndex == -1) {
-        size_t head = myPageIndex * PAGE_SIZE + FILE_HEAD_SIZE;
+    if (pageInBuffer == -1) {
+        pageInBuffer = getFreePageIndex();
+        size_t head = pageInDisk * PAGE_SIZE + FILE_HEAD_SIZE;
         file.seekg(head, ios::beg);
-        pageIndex = getFreePageIndex();
-        file.read(buffer[pageIndex], PAGE_SIZE);
-        usedMatrix[pageIndex] = this;
-        used[pageIndex] = 1;
-        page[pageIndex] = myPageIndex;
+        file.read(buffer[pageInBuffer], PAGE_SIZE);
+		if (file.bad()) {
+			cout << "bad: " << __LINE__ << endl;
+		}
+		if (file.fail()) {
+			cout << "fail" << endl;
+		}
+        usedMatrix[pageInBuffer] = this;
+        used[pageInBuffer] = 1;
+        page[pageInBuffer] = pageInDisk;
     }
-    size_t head = vectorIndex * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
-    memcpy(getPageBuffer(pageIndex) + head, row.getBuffer(), dimension * sizeof(float));
+    size_t head = vectorIndexInPage * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
+    memcpy(getPageBuffer(pageInBuffer) + head, row.getBuffer(), dimension * sizeof(float));
 }
 
 DenseMatrix::~DenseMatrix() {
     for (int i = 0; i < PAGE_NUMBER; i++) {
-        if (usedMatrix[i]) {
+        if (usedMatrix[i] == this) {
             usedMatrix[i]->removeSelfFromBuffer(i);
         }
     }
@@ -229,11 +269,17 @@ void DenseMatrix::showPage(int pageNum) {
     char tempBuffer[PAGE_SIZE];
     file.seekg(head, ios::beg);
     file.read(tempBuffer, PAGE_SIZE);
+	if (file.bad()) {
+		cout << "bad: " << __LINE__ << endl;
+	}
+	if (file.fail()) {
+		cout << "fail" << endl;
+	}
     tail = PAGE_SIZE - sizeof(size_t) - 1;
     size_t tempSize;
     memcpy(&tempSize, reinterpret_cast<size_t*>(tempBuffer + tail), sizeof(size_t));
     cout << "page " << pageNum << " has vector: " << tempSize << endl;
-    tail -= sizeof(size_t) * getVectorNumOfOnePage(dimension);
+    tail -= sizeof(size_t) * getVectorNumPerPage(dimension);
     head = 0;
     size_t tempS = 0;
     float tempF = 0;

@@ -1,6 +1,6 @@
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
+#include <cstdlib>
+#include <ctime>
+#include <cmath>
 #include <iostream>
 
 #include "Matrix.h"
@@ -35,7 +35,7 @@ void preProcess(string dataSet) {
             row[j] = sMatrix[i][j] * MEAN / rowMean;
         }
         pMatrix.setRow(row);
-        cout << "row " << i << endl;
+		cout << "row " << i << endl;
     }
     pMatrix.showPage(1);
 }

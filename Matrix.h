@@ -62,11 +62,11 @@ public:
 
     void showPage(int);
 private:
-    // 得到指定页号的page在页管理器中的位置
-    int getPageIndex(size_t pageNum);
+    // 得到指定页号的page在页管理器中的位置，若页不存在于缓冲区中，返回-1
+    int getPageIndexInBuffer(size_t pageNum);
 
     // 计算一页可以存多少向量
-    static size_t getVectorNumOfOnePage(size_t dimension);
+    static size_t getVectorNumPerPage(size_t dimension);
 
     // 得到指定页的缓冲区
     char* getPageBuffer(size_t pageNum);
@@ -84,7 +84,7 @@ private:
     static const string dir;
 
     fstream file;
-    int used[PAGE_NUMBER];
+    bool used[PAGE_NUMBER];
 };
 
 void dot(string, Matrix&, Matrix&);

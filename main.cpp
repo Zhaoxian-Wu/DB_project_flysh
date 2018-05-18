@@ -1,4 +1,5 @@
 #include <ctime>
+#include <cstdlib>
 
 #include "compileOption.h"
 #include "Matrix.h"
@@ -12,7 +13,7 @@ int main() {
     };
     srand((unsigned)time(NULL));
     for (int i = 0; i != 1; ++i) {
-        DenseMatrix M(dataset[i]);
+        DenseMatrix M(dataset[i] + "_source");
         size_t vecCount = M.getRow();
         size_t dimension = M.getColumn();
 
@@ -92,9 +93,17 @@ int main() {
 
 
 #ifdef OTHER
+#include <iostream>
+using namespace std;
 int main() {
-    //DenseMatrix M("mnist_source");
     DenseMatrix M("mnist_preProcess");
-    M.showPage(0);
+    //M.showPage(10);
+	for (int i = 0; i != M.getRow(); ++i) {
+		float sum = 0;
+		for (int j = 0; j != M.getColumn(); ++j) {
+			sum += M[i][j];
+		}
+		cout << (sum /= M.getColumn()) << endl;
+	}
 }
 #endif // OTHER
