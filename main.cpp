@@ -5,7 +5,11 @@
 #include "Matrix.h"
 
 #ifdef PROCESS
+#include <iostream>
 #include "dataProcess.h"
+
+using namespace std;
+
 int main() {
     string dataset[] = {
         "mnist",
@@ -14,35 +18,38 @@ int main() {
     srand((unsigned)time(NULL));
     for (int i = 0; i != 1; ++i) {
         DenseMatrix M(dataset[i] + "_source");
-        size_t vecCount = M.getRow();
-        size_t dimension = M.getColumn();
 
         // 2.预处理后的数据。
-        // Preprocess
+		cout << "[开始预处理]" << endl;
         preProcess(dataset[i]);
 
         // 3.高斯投影矩阵和果蝇投影矩阵。
-        GaussionMatrix(dataset[i], vecCount, dimension);
-
-        // build a fly projection matrix using a given probability p
-        FlyMatrix(dataset[i], vecCount, dimension, 0.1);
+        size_t vecCount = M.getRow();
+        size_t dimension = M.getColumn();
+		cout << "[开始创建高斯投影矩阵]" << endl;
+		GaussionMatrix(dataset[i], 32, dimension);
+		cout << "[开始创建果蝇投影矩阵]" << endl;
+		FlyMatrix(dataset[i], 32, dimension, 0.1);
 
         // 4.使用高斯投影矩阵哈希后的数据。
-        // build matrix after gaussion project
-        GaussionProject(dataset[i]);
+		cout << "[开始使用高斯投影矩阵哈希数据]" << endl;
+		GaussionProject(dataset[i]);
 
         // 5.使用果蝇投影矩阵哈希后的数据。
-        // build matrix after fly project
-        FlyProject(dataset[i]);
+		cout << "[开始使用果蝇投影矩阵哈希数据]" << endl;
+		FlyProject(dataset[i]);
 
         // 6.基于果蝇投影矩阵哈希后，应用了random机制的数据。
-        randomMatrix(dataset[i], 32);
+		cout << "[开始应用random机制]" << endl;
+		randomMatrix(dataset[i], 32);
 
         // 7.基于果蝇投影矩阵哈希后，应用了WTA机制的数据。
-        WTAMatrix(dataset[i], 32);
+		cout << "[开始应用WTA机制]" << endl;
+		WTAMatrix(dataset[i], 32);
 
         // 8.基于果蝇投影矩阵哈希后，应用了binary机制的数据。
-        binaryMatrix(dataset[i], 32);
+		cout << "[开始应用binary机制]" << endl;
+		binaryMatrix(dataset[i], 32);
     }
 }
 #endif // PROCESS

@@ -12,7 +12,7 @@ class Row {
 public:
     static float dist(Row&, Row&);
     Row(const Row&);
-    Row(size_t _dimension, size_t _id, char* _buffer);
+    Row(size_t _dimension, size_t _id, char* _buffer = nullptr);
     ~Row();
     float& operator[] (size_t);
     Row& operator=(const Row&);
@@ -62,7 +62,7 @@ public:
 
     void showPage(int);
 private:
-    // 得到指定页号的page在页管理器中的位置，若页不存在于缓冲区中，返回-1
+    // 得到指定页号的page在页管理器中的位置，若页不存在于缓冲区中，则从磁盘中交换出来
     int getPageIndexInBuffer(size_t pageNum);
 
     // 计算一页可以存多少向量

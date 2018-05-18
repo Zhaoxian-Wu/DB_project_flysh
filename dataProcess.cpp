@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
@@ -65,17 +66,17 @@ void FlyMatrix(string dataSet, size_t m, size_t dim, float p) {
     DenseMatrix flyMatrix(dataSet + "_flyMatrix", m, dim);
     // number of "1"
     int d = (int) (dim * p);
-    for (size_t i = 0; i < dim; ++i) {
+    for (size_t i = 0; i < m; ++i) {
         Row row(dim, i, nullptr);
         for (int count = 0; count < d; ) {
             size_t j = rand() % dim;
-            if (flyMatrix[i][j] == 0.0f) {
+            if (abs(flyMatrix[i][j] - 0.0f) < 0.00001) {
                 row[j] = 1.0f;
                 ++count;
             }
         }
         flyMatrix.setRow(row);
-    }
+	}
 }
 
 
@@ -84,9 +85,27 @@ void FlyMatrix(string dataSet, size_t m, size_t dim, float p) {
 void GaussionProject(string dataSet) {
     DenseMatrix preProcessMatrix(dataSet + "_preProcess");
     DenseMatrix gaussMatrix(dataSet + "_gaussMatrix");
-    gaussMatrix.transpose(dataSet + "_gaussMatrixTrans");
-    DenseMatrix gaussMatrixTrans(dataSet + "_gaussMatrixTrans");
-    dot(dataSet + "_gaussProjectMatrix", preProcessMatrix, gaussMatrixTrans);
+
+	assert(preProcessMatrix.getColumn() == gaussMatrix.getColumn());
+
+	size_t vectorCount = preProcessMatrix.getRow();
+	size_t dimension = preProcessMatrix.getColumn();
+	size_t newDim = gaussMatrix.getRow();
+	DenseMatrix C(dataSet + "_gaussProjectMatrix", vectorCount, newDim);
+
+	for (size_t i = 0; i != vectorCount; ++i) {
+		Row row(newDim, i);
+		for (size_t j = 0; j != newDim; ++j) {
+			Row aRow = preProcessMatrix[i];
+			Row bCol = gaussMatrix[j];
+			row[j] = 0;
+			for (size_t k = 0; k != dimension; ++k) {
+				row[j] += aRow[k] * bCol[k];
+			}
+			C.setRow(row);
+			cout << "已处理" << i << "行" << endl;
+		}
+	}
 }
 
 // 5.使用果蝇投影矩阵哈希后的数据。
@@ -94,9 +113,27 @@ void GaussionProject(string dataSet) {
 void FlyProject(string dataSet) {
     DenseMatrix preProcessMatrix(dataSet + "_preProcess");
     DenseMatrix flyMatrix(dataSet + "_flyMatrix");
-    flyMatrix.transpose(dataSet + "_flyMatrixTrans");
-    DenseMatrix flyMatrixTrans(dataSet + "_flyMatrixTrans");
-    dot(dataSet + "_flyProjectMatrix", preProcessMatrix, flyMatrixTrans);
+
+	assert(preProcessMatrix.getColumn() == flyMatrix.getColumn());
+
+	size_t vectorCount = preProcessMatrix.getRow();
+	size_t dimension = preProcessMatrix.getColumn();
+	size_t newDim = flyMatrix.getRow();
+	DenseMatrix C(dataSet + "_flyProjectMatrix", vectorCount, newDim);
+
+	for (size_t i = 0; i != vectorCount; ++i) {
+		Row row(newDim, i);
+		for (size_t j = 0; j != newDim; ++j) {
+			Row aRow = preProcessMatrix[i];
+			Row bCol = flyMatrix[j];
+			row[j] = 0;
+			for (size_t k = 0; k != dimension; ++k) {
+				row[j] += aRow[k] * bCol[k];
+			}
+			C.setRow(row);
+			cout << "已处理" << i << "行" << endl;
+		}
+	}
 }
 
 //this struct must be added too

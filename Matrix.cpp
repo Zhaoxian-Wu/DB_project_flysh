@@ -13,7 +13,7 @@ Row::Row(const Row& other) {
     *this = other;
 }
 
-Row::Row(size_t _dimension, size_t _id, char* buffer = nullptr) {
+Row::Row(size_t _dimension, size_t _id, char* buffer) {
     id = _id;
     dimension = _dimension;
     row = new float[dimension];
@@ -139,13 +139,6 @@ DenseMatrix::DenseMatrix(string matrixName) {
     }
     file.open((dir + matrixName).c_str(), ios::out | ios::in | ios::binary);
     char tempBuffer[sizeof(size_t) * 2];
-	if (file.fail()) {
-		cout << "fail" << endl;
-	}
-    file.seekg(0, ios::beg);
-	if (file.fail()) {
-		cout << "fail" << endl;
-	}
     file.read(tempBuffer, sizeof(size_t) * 2);
 	if (file.fail()) {
 		cout << "fail" << endl;
@@ -158,25 +151,11 @@ DenseMatrix::DenseMatrix(string matrixName) {
 }
 
 Row DenseMatrix::operator[] (size_t _row) {
-    size_t PageInDisk = _row / getVectorNumPerPage(dimension);
-    size_t vectorIndex = _row % getVectorNumPerPage(dimension);
-    int pageInBuffer = getPageIndexInBuffer(PageInDisk);
-    if (pageInBuffer == -1) {
-        pageInBuffer = getFreePageIndex();
-        size_t head = PageInDisk * PAGE_SIZE + FILE_HEAD_SIZE;
-        file.seekg(head, ios::beg);
-        file.read(buffer[pageInBuffer], PAGE_SIZE);
-        if (file.bad()) {
-            cout << "bad: " << __LINE__ << endl;
-        }
-		if (file.fail()) {
-			cout << "fail" << endl;
-		}
-        usedMatrix[pageInBuffer] = this;
-        used[pageInBuffer] = true;
-        page[pageInBuffer] = PageInDisk;
-    }
+	int vectorNumPerPage = getVectorNumPerPage(dimension);
+    size_t PageInDisk = _row / vectorNumPerPage;
+    size_t vectorIndex = _row % vectorNumPerPage;
     size_t head = vectorIndex * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
+    int pageInBuffer = getPageIndexInBuffer(PageInDisk);
     return Row(dimension, _row, getPageBuffer(pageInBuffer) + head);
 }
 
@@ -184,15 +163,37 @@ size_t DenseMatrix::getVectorNumPerPage(size_t dimension) {
     return (PAGE_SIZE - sizeof(size_t)) / (sizeof(float) * dimension + sizeof(size_t) * 2);
 }
 
-int DenseMatrix::getPageIndexInBuffer(size_t pageNum) {
+int DenseMatrix::getPageIndexInBuffer(size_t pageInDisk) {
+	// 如果缓冲区有对应页，返回页号
     for (int i = 0; i < PAGE_NUMBER; i++) {
-        if (page[i] == pageNum) {
+        if (page[i] == pageInDisk) {
             if (used[i] == 1) {
                 return i;
             }
         }
     }
-    return -1;
+	// 如果缓冲区没有对应页，从磁盘里交换出一页
+	int pageInBuffer = getFreePageIndex();
+	size_t head = pageInDisk * PAGE_SIZE + FILE_HEAD_SIZE;
+	if (file.bad()) {
+		cout << "bad: " << __LINE__ << endl;
+	}
+	if (file.fail()) {
+		cout << "fail" << endl;
+	}
+	file.seekg(head, ios::beg);
+	file.read(buffer[pageInBuffer], PAGE_SIZE);
+	if (file.bad()) {
+		cout << "bad: " << __LINE__ << endl;
+	}
+	if (file.fail()) {
+		cout << "fail" << endl;
+	}
+	usedMatrix[pageInBuffer] = this;
+	used[pageInBuffer] = true;
+	page[pageInBuffer] = pageInDisk;
+
+	return pageInBuffer;
 }
 
 char* DenseMatrix::getPageBuffer(size_t pageNum) {
@@ -234,22 +235,6 @@ void DenseMatrix::setRow(Row& row) {
     size_t vectorIndexInPage = id % vectorPerPage;
     //get pageIndex of buffer
     int pageInBuffer = getPageIndexInBuffer(pageInDisk);
-    //if this page not in buffer
-    if (pageInBuffer == -1) {
-        pageInBuffer = getFreePageIndex();
-        size_t head = pageInDisk * PAGE_SIZE + FILE_HEAD_SIZE;
-        file.seekg(head, ios::beg);
-        file.read(buffer[pageInBuffer], PAGE_SIZE);
-		if (file.bad()) {
-			cout << "bad: " << __LINE__ << endl;
-		}
-		if (file.fail()) {
-			cout << "fail" << endl;
-		}
-        usedMatrix[pageInBuffer] = this;
-        used[pageInBuffer] = 1;
-        page[pageInBuffer] = pageInDisk;
-    }
     size_t head = vectorIndexInPage * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
     memcpy(getPageBuffer(pageInBuffer) + head, row.getBuffer(), dimension * sizeof(float));
 }
@@ -307,6 +292,7 @@ char DenseMatrix::buffer[PAGE_NUMBER][PAGE_SIZE] = {};
 size_t DenseMatrix::page[PAGE_NUMBER] = {};
 
 void dot(string newMatrixName, Matrix& A, Matrix& B) {
+	cout << A.getRow() << " " << A.getColumn() << " " << B.getRow() << " " << B.getColumn() << endl;
     assert(A.getColumn() == B.getRow());
     size_t m = A.getRow();
     size_t n = B.getColumn();
