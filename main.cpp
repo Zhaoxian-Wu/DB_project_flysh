@@ -61,10 +61,10 @@ void testAccurateKNN(Matrix& rowData, Matrix& handledData);
 int main() {
     srand((unsigned)time(NULL));
     string dataset[] = {
-        "glove",
+        //"glove",
         "mnist"
     };
-    for (int i = 0; i != 2; ++i) {
+    for (int i = 0; i != 1; ++i) {
         cout << "数据集" << dataset[i] << "测试:" << endl;
         testAccurateKNN(DenseMatrix(dataset[i] + "_source"), DenseMatrix(dataset[i] + "_preProcess"));
     }
@@ -114,3 +114,24 @@ int main() {
 	}
 }
 #endif // OTHER
+
+//int main() {
+//    {
+//        fstream fs("mnist");
+//        string str;
+//        clock_t start = clock();
+//        while (getline(fs, str)) {
+//        }
+//        clock_t end = clock();
+//        printf("读取文件时间:%d秒\n", (end - start) / CLOCKS_PER_SEC);
+//    }
+//    {
+//        clock_t start = clock();
+//        DenseMatrix M("mnist_source");
+//        for (int i = 0; i != M.getRow(); ++i) {
+//            Row r = M[i];
+//        }
+//        clock_t end = clock();
+//        printf("遍历矩阵时间:%d秒\n", (end - start) / CLOCKS_PER_SEC);
+//    }
+//}

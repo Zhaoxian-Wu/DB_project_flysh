@@ -27,6 +27,9 @@
     <ClInclude Include="compileOption.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Array.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="query.cpp">
@@ -45,6 +48,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="row.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

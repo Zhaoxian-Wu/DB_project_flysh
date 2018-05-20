@@ -1,7 +1,6 @@
 #pragma once
 #include <fstream>
 #include <string>
-
 #define PAGE_NUMBER 50
 #define PAGE_SIZE (64 * 1024)
 
@@ -10,28 +9,29 @@ using std::string;
 
 class Row {
 public:
-    static float dist(Row&, Row&);
+    static float dist(const Row&, const Row&);
     Row(const Row&);
     Row(size_t _dimension, size_t _id, char* _buffer = nullptr);
     ~Row();
     float& operator[] (size_t);
+    float operator[] (size_t) const;
     Row& operator=(const Row&);
-    float* getBuffer() {
+    float* getBuffer() const {
         return row;
     }
     void setID(size_t _id) {
         id = _id;
     }
-    size_t getID() {
+    size_t getID() const {
         return id;
     };
-    size_t getColumn() {
+    size_t getColumn() const {
         return dimension;
     }
 private:
     float* row;
     size_t dimension;
-    size_t id; // id其实就是矩阵的行数
+    size_t id;
 };
 
 class Matrix {

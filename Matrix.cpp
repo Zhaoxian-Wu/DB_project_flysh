@@ -9,39 +9,6 @@
 
 using namespace std;
 
-Row::Row(const Row& other) {
-    *this = other;
-}
-
-Row::Row(size_t _dimension, size_t _id, char* buffer) {
-    id = _id;
-    dimension = _dimension;
-    row = new float[dimension];
-    if (buffer) {
-        memcpy(row, buffer, dimension * sizeof(float));
-    } else {
-        memset(row, 0, dimension * sizeof(float));
-	}
-}
-
-Row::~Row() {
-    delete[] row;
-}
-
-Row& Row::operator=(const Row&other) {
-    dimension = other.dimension;
-    if (row) {
-        delete[] row;
-    }
-    row = new float[dimension];
-    memcpy(row, other.row, dimension * sizeof(float));
-    return *this;
-}
-
-float& Row::operator[] (size_t index) {
-    return row[index];
-}
-
 DenseMatrix::DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension) {
     for (int i = 0; i < PAGE_NUMBER; i++) {
         used[i] = 0;
@@ -127,7 +94,7 @@ DenseMatrix::DenseMatrix(string matrixName) {
 }
 
 Row DenseMatrix::operator[] (size_t _row) {
-	int vectorNumPerPage = getVectorNumPerPage(dimension);
+	size_t vectorNumPerPage = getVectorNumPerPage(dimension);
     size_t PageInDisk = _row / vectorNumPerPage;
     size_t vectorIndex = _row % vectorNumPerPage;
     size_t head = vectorIndex * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
@@ -263,17 +230,6 @@ void dot(string newMatrixName, Matrix& A, Matrix& B) {
             C.setRow(row);
         }
     }
-}
-
-float Row::dist(Row& a, Row& b) {
-    assert(a.getColumn() == b.getColumn());
-    size_t size = a.getColumn();
-    float res = 0;
-    for (int i = 0; i != size; ++i) {
-        float d = a[i] - b[i];
-        res += d * d;
-    }
-    return (float)sqrt(res);
 }
 
 void DenseMatrix::transpose(string newMatrixName) {
