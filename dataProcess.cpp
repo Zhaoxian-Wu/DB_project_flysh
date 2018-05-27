@@ -31,11 +31,10 @@ void preProcess(string dataSet) {
         }
         rowMean /= column;
         // set each row
-        Row row(column, i, nullptr);
+        float* row = sMatrix[i];
         for (size_t j = 0; j < column; ++j) {
-            row[j] = sMatrix[i][j] * MEAN / rowMean;
+            row[j] = row[j] * MEAN / rowMean;
         }
-        pMatrix.setRow(row);
 		cout << "row " << i << endl;
     }
     pMatrix.showPage(1);
@@ -52,11 +51,10 @@ void GaussionMatrix(string dataSet, size_t m, size_t dim) {
     srand((unsigned int)time(NULL));
     DenseMatrix gaussMatrix(dataSet + "_gaussMatrix", m, dim);
     for (int i = 0; i < m; ++i) {
-        Row row(dim, i, nullptr);
+        float* row = gaussMatrix[i];
         for (int j = 0; j < dim; ++j) {
             row[j] = GaussionDistribution();
         }
-        gaussMatrix.setRow(row);
     }
 }
 
@@ -67,7 +65,7 @@ void FlyMatrix(string dataSet, size_t m, size_t dim, float p) {
     // number of "1"
     int d = (int) (dim * p);
     for (size_t i = 0; i < m; ++i) {
-        Row row(dim, i, nullptr);
+        float* row = flyMatrix[i];
         for (int count = 0; count < d; ) {
             size_t j = rand() % dim;
             if (abs(flyMatrix[i][j] - 0.0f) < 0.00001) {
@@ -75,7 +73,6 @@ void FlyMatrix(string dataSet, size_t m, size_t dim, float p) {
                 ++count;
             }
         }
-        flyMatrix.setRow(row);
 	}
 }
 
@@ -93,19 +90,22 @@ void GaussionProject(string dataSet) {
 	size_t newDim = gaussMatrix.getRow();
 	DenseMatrix C(dataSet + "_gaussProjectMatrix", vectorCount, newDim);
 
+    float* row = new float[newDim];
+    float* aRow = new float[newDim];
 	for (size_t i = 0; i != vectorCount; ++i) {
-		Row row(newDim, i);
 		for (size_t j = 0; j != newDim; ++j) {
-			Row aRow = preProcessMatrix[i];
-			Row bCol = gaussMatrix[j];
+            memcpy(aRow, preProcessMatrix[i], newDim * sizeof(float));
+            float* bCol = gaussMatrix[j];
 			row[j] = 0;
 			for (size_t k = 0; k != dimension; ++k) {
 				row[j] += aRow[k] * bCol[k];
 			}
-			C.setRow(row);
 			cout << "已处理" << i << "行" << endl;
 		}
+        memcpy(gaussMatrix[i], row, newDim * sizeof(float));
 	}
+    delete[] row;
+    delete[] aRow;
 }
 
 // 5.使用果蝇投影矩阵哈希后的数据。
@@ -121,19 +121,22 @@ void FlyProject(string dataSet) {
 	size_t newDim = flyMatrix.getRow();
 	DenseMatrix C(dataSet + "_flyProjectMatrix", vectorCount, newDim);
 
-	for (size_t i = 0; i != vectorCount; ++i) {
-		Row row(newDim, i);
-		for (size_t j = 0; j != newDim; ++j) {
-			Row aRow = preProcessMatrix[i];
-			Row bCol = flyMatrix[j];
-			row[j] = 0;
-			for (size_t k = 0; k != dimension; ++k) {
-				row[j] += aRow[k] * bCol[k];
-			}
-			C.setRow(row);
-			cout << "已处理" << i << "行" << endl;
-		}
-	}
+    float* row = new float[newDim];
+    float* aRow = new float[newDim];
+    for (size_t i = 0; i != vectorCount; ++i) {
+        for (size_t j = 0; j != newDim; ++j) {
+            memcpy(aRow, preProcessMatrix[i], newDim * sizeof(float));
+            float* bCol = flyMatrix[j];
+            row[j] = 0;
+            for (size_t k = 0; k != dimension; ++k) {
+                row[j] += aRow[k] * bCol[k];
+            }
+            cout << "已处理" << i << "行" << endl;
+        }
+        memcpy(flyMatrix[i], row, newDim * sizeof(float));
+    }
+    delete[] row;
+    delete[] aRow;
 }
 
 //this struct must be added too
@@ -171,12 +174,12 @@ void randomMatrix(string dataSet, size_t k) {
     }
 
     //save the corresponding columns
-    DenseMatrix*  matrixAfter = new DenseMatrix(dataSet + "_randomMatrix", ROW, k);
+    DenseMatrix matrixAfter(dataSet + "_randomMatrix", ROW, k);
 
     size_t currentCol = 0;
+    float* row = new float[k];//k维，第i行
+    
     for (size_t i = 0; i<ROW; i++) {
-
-        Row row(k, i, nullptr);//k维，第i行
 
         for (size_t x = 0; x < k; x++) {//保留第i行的k个currentCol
             currentCol = ran[x];
@@ -184,12 +187,12 @@ void randomMatrix(string dataSet, size_t k) {
             double tt = M[i][currentCol];
             row[x] = M[i][currentCol];
         }
-        matrixAfter->setRow(row);
+        memcpy(matrixAfter[i], row, k * sizeof(float));
     }
 
+    delete[] row;
     delete[] ran;
     delete[] r;
-    delete matrixAfter;
 }
 
 // 7.基于果蝇投影矩阵哈希后，应用了WTA机制的数据。
@@ -202,7 +205,7 @@ void WTAMatrix(string dataSet, size_t k) {
     bool* isDelete = new bool[COL];//record if the certain column shou be delete
 
 
-    DenseMatrix*  matrixAfter = new DenseMatrix(dataSet + "_WTAMatrix", ROW, COL);
+    DenseMatrix matrixAfter(dataSet + "_WTAMatrix", ROW, COL);
 
     //find the top k in every row
     for (size_t i = 0; i < ROW; i++) {
@@ -227,7 +230,7 @@ void WTAMatrix(string dataSet, size_t k) {
             isDelete[rowStruct[x].subscripts] = false;
         }
 
-        Row row(COL, i, nullptr);
+        float* row = new float[COL];
 
         for (size_t x = 0; x < COL; x++) {
             if (isDelete[x]) {
@@ -236,13 +239,13 @@ void WTAMatrix(string dataSet, size_t k) {
                 row[x] = M[i][x];
             }
         }
-        matrixAfter->setRow(row);
+        memcpy(matrixAfter[i], row, COL * sizeof(float));
         delete[] rowStruct;
+        delete[] row;
     }
 
 
     delete[] isDelete;
-    delete matrixAfter;
 }
 
 
@@ -255,7 +258,7 @@ void binaryMatrix(string dataSet, size_t k) {
 
     bool* isDelete = new bool[COL];//record if the certain column shou be delete   
 
-    DenseMatrix*  matrixAfter = new DenseMatrix(dataSet + "_binaryMatrix", ROW, COL);
+    DenseMatrix matrixAfter(dataSet + "_binaryMatrix", ROW, COL);
     //find the top k in every row
 
     for (size_t i = 0; i < ROW; i++) {
@@ -281,7 +284,7 @@ void binaryMatrix(string dataSet, size_t k) {
         }
 
 
-        Row row(COL, i, nullptr);
+        float* row = new float[COL];
         for (size_t x = 0; x < COL; x++) {
             if (isDelete[x]) {
                 row[x] = 0;
@@ -289,9 +292,9 @@ void binaryMatrix(string dataSet, size_t k) {
                 row[x] = 1;
             }
         }
-        matrixAfter->setRow(row);
+        memcpy(matrixAfter[i], row, COL * sizeof(float));
         delete[] rowStruct;
+        delete[] row;
     }
     delete[] isDelete;
-    delete matrixAfter;
 }

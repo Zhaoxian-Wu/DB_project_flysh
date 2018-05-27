@@ -87,10 +87,11 @@ void ID_DIST_HEAP::adjust(size_t index) {
 	buffer[index] = pair;
 }
 
-Array<size_t> query(size_t k, Row& src, Matrix& data) {
+Array<size_t> query(size_t k, Array<float>& src, Matrix& data) {
     ID_DIST_HEAP heap(k);
+    size_t dimension = data.getColumn();
     for (size_t i = 0; i != data.getRow(); ++i) {
-        heap.insert(ID_DIST_PAIR(i, Row::dist(src, data[i])));
+        heap.insert(ID_DIST_PAIR(i, dist(src.getBuffer(), data[i], dimension)));
     }
     return heap.getList();
 }

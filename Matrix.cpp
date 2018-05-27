@@ -89,17 +89,17 @@ DenseMatrix::DenseMatrix(string matrixName) {
     file.open((dir + matrixName).c_str(), ios::out | ios::in | ios::binary);
     char tempBuffer[sizeof(size_t) * 2];
     file.read(tempBuffer, sizeof(size_t) * 2);
-    memcpy(&row, tempBuffer, sizeof(size_t));
-    memcpy(&dimension, tempBuffer + sizeof(size_t), sizeof(size_t));
+    row = *reinterpret_cast<size_t*>(tempBuffer);
+    dimension = *reinterpret_cast<size_t*>(tempBuffer + sizeof(size_t));
 }
 
-Row DenseMatrix::operator[] (size_t _row) {
+float* DenseMatrix::operator[] (size_t _row) {
 	size_t vectorNumPerPage = getVectorNumPerPage(dimension);
     size_t PageInDisk = _row / vectorNumPerPage;
     size_t vectorIndex = _row % vectorNumPerPage;
     size_t head = vectorIndex * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
     int pageInBuffer = getPageIndexInBuffer(PageInDisk);
-    return Row(dimension, _row, getPageBuffer(pageInBuffer) + head);
+    return reinterpret_cast<float*>(getPageBuffer(pageInBuffer) + head);
 }
 
 size_t DenseMatrix::getVectorNumPerPage(size_t dimension) {
@@ -150,19 +150,6 @@ void DenseMatrix::removeSelfFromBuffer(size_t pageInBuffer) {
     file.write(buffer[pageInBuffer], PAGE_SIZE);
 }
 
-void DenseMatrix::setRow(Row& row) {
-    assert(row.getColumn() == this->dimension);
-    size_t id = row.getID();
-    //get pageIndex of Matrix
-	size_t vectorPerPage = getVectorNumPerPage(dimension);
-    size_t pageInDisk = id / vectorPerPage;
-    size_t vectorIndexInPage = id % vectorPerPage;
-    //get pageIndex of buffer
-    int pageInBuffer = getPageIndexInBuffer(pageInDisk);
-    size_t head = vectorIndexInPage * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
-    memcpy(getPageBuffer(pageInBuffer) + head, row.getBuffer(), dimension * sizeof(float));
-}
-
 DenseMatrix::~DenseMatrix() {
     for (int i = 0; i < PAGE_NUMBER; i++) {
         if (usedMatrix[i] == this) {
@@ -209,38 +196,11 @@ const string DenseMatrix::dir = "dataDir/";
 char DenseMatrix::buffer[PAGE_NUMBER][PAGE_SIZE] = {};
 size_t DenseMatrix::page[PAGE_NUMBER] = {};
 
-void dot(string newMatrixName, Matrix& A, Matrix& B) {
-	cout << A.getRow() << " " << A.getColumn() << " " << B.getRow() << " " << B.getColumn() << endl;
-    assert(A.getColumn() == B.getRow());
-    size_t m = A.getRow();
-    size_t n = B.getColumn();
-    size_t p = A.getColumn();
-    B.transpose("temp");
-    DenseMatrix temp("temp");
-    DenseMatrix C(newMatrixName, m, n);
-    for (size_t i = 0; i != m; ++i) {
-        Row row(n, i);
-        for (size_t j = 0; j != n; ++j) {
-            Row aRow = A[i];
-            Row bCol = temp[j];
-            row[j] = 0;
-            for (size_t k = 0; k != p; ++k) {
-                row[j] += aRow[k] * bCol[k];
-            }
-            C.setRow(row);
-        }
+float dist(const float* a, const float* b, size_t size) {
+    float res = 0;
+    for (int i = 0; i != size; ++i) {
+        float d = a[i] - b[i];
+        res += d * d;
     }
-}
-
-void DenseMatrix::transpose(string newMatrixName) {
-    size_t m = getRow();
-    size_t n = getColumn();
-    DenseMatrix C(newMatrixName, n, m);
-    for (size_t i = 0; i != n; ++i) {
-        Row row(m, i);
-        for (size_t j = 0; j != m; ++j) {
-            row[j] = (*this)[j][i];
-        }
-        C.setRow(row);
-    }
+    return (float)sqrt(res);
 }

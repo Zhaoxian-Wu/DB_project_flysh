@@ -25,6 +25,9 @@ public:
 		assert(index >= 0 && index < max_size);
 		return _buffer[index];
 	}
+    T* getBuffer() {
+        return _buffer;
+    }
 private:
 	size_t max_size;
 	T * _buffer;

@@ -129,9 +129,10 @@ int main() {
 //        clock_t start = clock();
 //        DenseMatrix M("mnist_source");
 //        for (int i = 0; i != M.getRow(); ++i) {
-//            Row r = M[i];
+//            //float* r = M[i];
+//            printf("%d", M[i][0]);
 //        }
 //        clock_t end = clock();
-//        printf("遍历矩阵时间:%d秒\n", (end - start) / CLOCKS_PER_SEC);
+//        printf("遍历矩阵时间:%lf秒\n", (end - start) / CLOCKS_PER_SEC);
 //    }
 //}

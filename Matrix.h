@@ -7,37 +7,9 @@
 using std::fstream;
 using std::string;
 
-class Row {
-public:
-    static float dist(const Row&, const Row&);
-    Row(const Row&);
-    Row(size_t _dimension, size_t _id, char* _buffer = nullptr);
-    ~Row();
-    float& operator[] (size_t);
-    float operator[] (size_t) const;
-    Row& operator=(const Row&);
-    float* getBuffer() const {
-        return row;
-    }
-    void setID(size_t _id) {
-        id = _id;
-    }
-    size_t getID() const {
-        return id;
-    };
-    size_t getColumn() const {
-        return dimension;
-    }
-private:
-    float* row;
-    size_t dimension;
-    size_t id;
-};
-
 class Matrix {
 public:
-    virtual Row operator[] (size_t) = 0;
-    virtual void transpose(string) = 0;
+    virtual float* operator[] (size_t) = 0;
     size_t getRow() {
         return row;
     }
@@ -55,10 +27,7 @@ public:
     DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension);
     ~DenseMatrix();
 
-    Row operator[] (size_t);
-   void transpose(string);
-
-    void setRow(Row& row);
+    float* operator[] (size_t);
 
     void showPage(int);
 private:
@@ -87,4 +56,4 @@ private:
     bool used[PAGE_NUMBER];
 };
 
-void dot(string, Matrix&, Matrix&);
+float dist(const float* a, const float* b, size_t size);

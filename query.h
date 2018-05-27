@@ -2,7 +2,7 @@
 #include "Array.h"
 #include "Matrix.h"
 
-Array<size_t> query(size_t k, Row& src, Matrix& data);
+Array<size_t> query(size_t k, Array<float>& src, Matrix& data);
 
 class ID_DIST_PAIR {
 public:
