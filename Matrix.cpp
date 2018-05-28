@@ -95,10 +95,10 @@ DenseMatrix::DenseMatrix(string matrixName) {
 
 float* DenseMatrix::operator[] (size_t _row) {
 	size_t vectorNumPerPage = getVectorNumPerPage(dimension);
-    size_t PageInDisk = _row / vectorNumPerPage;
+    size_t pageInDisk = _row / vectorNumPerPage;
     size_t vectorIndex = _row % vectorNumPerPage;
     size_t head = vectorIndex * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
-    int pageInBuffer = getPageIndexInBuffer(PageInDisk);
+    int pageInBuffer = getPageIndexInBuffer(pageInDisk);
     return reinterpret_cast<float*>(getPageBuffer(pageInBuffer) + head);
 }
 
@@ -110,7 +110,7 @@ int DenseMatrix::getPageIndexInBuffer(size_t pageInDisk) {
 	// 如果缓冲区有对应页，返回页号
     for (int i = 0; i < PAGE_NUMBER; i++) {
         if (page[i] == pageInDisk) {
-            if (used[i] == 1) {
+            if (used[i] == true) {
                 return i;
             }
         }
@@ -123,12 +123,13 @@ int DenseMatrix::getPageIndexInBuffer(size_t pageInDisk) {
 	usedMatrix[pageInBuffer] = this;
 	used[pageInBuffer] = true;
 	page[pageInBuffer] = pageInDisk;
+    hasChange[pageInBuffer] = false;
 
 	return pageInBuffer;
 }
 
-char* DenseMatrix::getPageBuffer(size_t pageNum) {
-    return buffer[pageNum];
+char* DenseMatrix::getPageBuffer(size_t pageInBuffer) {
+    return buffer[pageInBuffer];
 }
 
 int DenseMatrix::getFreePageIndex() {
@@ -143,11 +144,14 @@ int DenseMatrix::getFreePageIndex() {
 }
 
 void DenseMatrix::removeSelfFromBuffer(size_t pageInBuffer) {
+    size_t head = page[pageInBuffer] * PAGE_SIZE + FILE_HEAD_SIZE;
+    if (hasChange[pageInBuffer]) {
+        file.seekp(head, ios::beg);
+        file.write(buffer[pageInBuffer], PAGE_SIZE);
+    }
     used[pageInBuffer] = false;
     usedMatrix[pageInBuffer] = nullptr;
-    size_t head = page[pageInBuffer] * PAGE_SIZE + FILE_HEAD_SIZE;
-    file.seekp(head, ios::beg);
-    file.write(buffer[pageInBuffer], PAGE_SIZE);
+    hasChange[pageInBuffer] = false;
 }
 
 DenseMatrix::~DenseMatrix() {
@@ -191,10 +195,22 @@ void DenseMatrix::showPage(int pageNum) {
     }
 }
 
+void DenseMatrix::setRow(size_t row) {
+    size_t vectorNumPerPage = getVectorNumPerPage(dimension);
+    size_t pageInDisk = row / vectorNumPerPage;
+    for (int i = 0; i < PAGE_NUMBER; i++) {
+        if (page[i] == pageInDisk && used[i] == true) {
+            hasChange[i] = true;
+            return;
+        }
+    }
+}
+
 DenseMatrix* DenseMatrix::usedMatrix[PAGE_NUMBER] = { nullptr };
 const string DenseMatrix::dir = "dataDir/";
 char DenseMatrix::buffer[PAGE_NUMBER][PAGE_SIZE] = {};
 size_t DenseMatrix::page[PAGE_NUMBER] = {};
+bool DenseMatrix::hasChange[PAGE_NUMBER] = { false };
 
 float dist(const float* a, const float* b, size_t size) {
     float res = 0;

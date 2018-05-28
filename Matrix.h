@@ -29,6 +29,9 @@ public:
 
     float* operator[] (size_t);
 
+    // 通知矩阵：某一行元素内容已修改
+    void setRow(size_t row);
+
     void showPage(int);
 private:
     // 得到指定页号的page在页管理器中的位置，若页不存在于缓冲区中，则从磁盘中交换出来
@@ -49,6 +52,8 @@ private:
     static char buffer[PAGE_NUMBER][PAGE_SIZE];		//buffer page
     static size_t page[PAGE_NUMBER];				//page id of matrix
     static DenseMatrix* usedMatrix[PAGE_NUMBER];	//matrix who used this page
+    static bool hasChange[PAGE_NUMBER];
+
     static const size_t FILE_HEAD_SIZE = sizeof(size_t) * 2;
     static const string dir;
 

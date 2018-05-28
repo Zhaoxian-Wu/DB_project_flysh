@@ -31,11 +31,14 @@ void preProcess(string dataSet) {
         }
         rowMean /= column;
         // set each row
-        float* row = sMatrix[i];
+        float* row = pMatrix[i];
         for (size_t j = 0; j < column; ++j) {
-            row[j] = row[j] * MEAN / rowMean;
+            row[j] = sMatrix[i][j] * MEAN / rowMean;
         }
-		cout << "row " << i << endl;
+        pMatrix.setRow(i);
+        if (i % 1000 == 0) {
+		    cout << "已处理" << i << "行" << endl;
+        }
     }
     pMatrix.showPage(1);
 }
@@ -55,6 +58,7 @@ void GaussionMatrix(string dataSet, size_t m, size_t dim) {
         for (int j = 0; j < dim; ++j) {
             row[j] = GaussionDistribution();
         }
+        gaussMatrix.setRow(i);
     }
 }
 
@@ -73,6 +77,7 @@ void FlyMatrix(string dataSet, size_t m, size_t dim, float p) {
                 ++count;
             }
         }
+        flyMatrix.setRow(i);
 	}
 }
 
@@ -103,6 +108,7 @@ void GaussionProject(string dataSet) {
 			cout << "已处理" << i << "行" << endl;
 		}
         memcpy(gaussMatrix[i], row, newDim * sizeof(float));
+        C.setRow(i);
 	}
     delete[] row;
     delete[] aRow;
@@ -134,6 +140,7 @@ void FlyProject(string dataSet) {
             cout << "已处理" << i << "行" << endl;
         }
         memcpy(flyMatrix[i], row, newDim * sizeof(float));
+        flyMatrix.setRow(i);
     }
     delete[] row;
     delete[] aRow;
@@ -188,6 +195,7 @@ void randomMatrix(string dataSet, size_t k) {
             row[x] = M[i][currentCol];
         }
         memcpy(matrixAfter[i], row, k * sizeof(float));
+        matrixAfter.setRow(i);
     }
 
     delete[] row;
@@ -240,6 +248,7 @@ void WTAMatrix(string dataSet, size_t k) {
             }
         }
         memcpy(matrixAfter[i], row, COL * sizeof(float));
+        matrixAfter.setRow(i);
         delete[] rowStruct;
         delete[] row;
     }
@@ -293,6 +302,7 @@ void binaryMatrix(string dataSet, size_t k) {
             }
         }
         memcpy(matrixAfter[i], row, COL * sizeof(float));
+        matrixAfter.setRow(i);
         delete[] rowStruct;
         delete[] row;
     }

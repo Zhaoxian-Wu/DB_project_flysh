@@ -114,25 +114,3 @@ int main() {
 	}
 }
 #endif // OTHER
-
-//int main() {
-//    {
-//        fstream fs("mnist");
-//        string str;
-//        clock_t start = clock();
-//        while (getline(fs, str)) {
-//        }
-//        clock_t end = clock();
-//        printf("读取文件时间:%d秒\n", (end - start) / CLOCKS_PER_SEC);
-//    }
-//    {
-//        clock_t start = clock();
-//        DenseMatrix M("mnist_source");
-//        for (int i = 0; i != M.getRow(); ++i) {
-//            //float* r = M[i];
-//            printf("%d", M[i][0]);
-//        }
-//        clock_t end = clock();
-//        printf("遍历矩阵时间:%lf秒\n", (end - start) / CLOCKS_PER_SEC);
-//    }
-//}
