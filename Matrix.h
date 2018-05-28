@@ -1,5 +1,4 @@
 #pragma once
-#include <fstream>
 #include <string>
 #define PAGE_NUMBER 50
 #define PAGE_SIZE (64 * 1024)
@@ -57,7 +56,7 @@ private:
     static const size_t FILE_HEAD_SIZE = sizeof(size_t) * 2;
     static const string dir;
 
-    fstream file;
+    FILE* file;
     bool used[PAGE_NUMBER];
 };
 
