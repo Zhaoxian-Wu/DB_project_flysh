@@ -58,6 +58,7 @@ private:
 
     FILE* file;
     bool used[PAGE_NUMBER];
+    size_t vectorNumPerPage;
 };
 
 float dist(const float* a, const float* b, size_t size);

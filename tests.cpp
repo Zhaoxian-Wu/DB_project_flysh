@@ -12,47 +12,45 @@
 
 using namespace std;
 
-#define TEST_TIME_1000_REPEAT
+//#define TEST_TIME_1000_REPEAT
 #ifdef TEST_TIME_1000_REPEAT
 void testAccurateKNN(Matrix& rowData, Matrix& processedData) {
     const int k = 200;
     const int TEST_VECTOR = 1000;
 
     size_t dimension = rowData.getColumn();
-	
-    double sumTimeRaw = 0;
-    double sumTimeHandled = 0;
 
     set<size_t> randomList;
     while (randomList.size() != TEST_VECTOR) {
         randomList.insert(rand() % rowData.getRow());
     }
-
-    // 真正KNN（使用原始数据）
-    clock_t start = clock();
-    for each (size_t i in randomList) {
-        Array<size_t> knn = query(k, Array<float>(dimension, rowData[i]), rowData);
+    {
+        //// 真正KNN（使用原始数据）
+        //clock_t start = clock();
+        //for each (size_t i in randomList) {
+        //    Array<size_t> knn = query(k, Array<float>(dimension, rowData[i]), rowData);
+        //}
+        //clock_t end = clock();
+        //double time = clock() - start;
+        //printf("求查询向量真正KNN（使用原始数据）\n[总时间  ]%f秒（共%d个）\n[平均时间]%f秒\n",
+        //    time / CLOCKS_PER_SEC,
+        //    TEST_VECTOR,
+        //    time / (TEST_VECTOR * CLOCKS_PER_SEC)
+        //);
     }
-    clock_t end = clock();
-    sumTimeRaw += (end - start);
-
-    // 真正KNN（使用处理后数据）
-    sumTimeHandled = 0;
-    for each (size_t i in randomList) {
+    {
+        // 真正KNN（使用处理后数据）
         clock_t start = clock();
         for each (size_t i in randomList) {
 			Array<size_t> knn = query(k, Array<float>(dimension, processedData[i]), processedData);
         }
-        clock_t end = clock();
-        sumTimeHandled += (end - start);
+        double time = time = (clock() - start);
+        printf("求查询向量真正KNN（使用处理后数据）\n[总时间  ]%f秒（共%d个）\n[平均时间]%f秒\n", time / CLOCKS_PER_SEC, TEST_VECTOR, (time / (TEST_VECTOR  * CLOCKS_PER_SEC)));
     }
-    
-    printf("求查询向量真正KNN（使用处理后数据）\n[总时间]%f秒（共%d个）\n[平均时间]%f秒\n", sumTimeRaw / CLOCKS_PER_SEC, TEST_VECTOR, (sumTimeRaw / (TEST_VECTOR  * CLOCKS_PER_SEC)));
-    printf("求查询向量真正KNN（使用原始数据）\n[总时间]%f秒（共%d个）\n[平均时间]%f秒\n", sumTimeHandled / CLOCKS_PER_SEC, TEST_VECTOR, (sumTimeHandled / (TEST_VECTOR * CLOCKS_PER_SEC)));
 }
 #endif // TEST_TIME_1000_REPEAT
 
-//#define TEST_TIME_PER_QUERY
+#define TEST_TIME_PER_QUERY
 #ifdef TEST_TIME_PER_QUERY
 
 void testAccurateKNN(Matrix& rowData, Matrix& processedData) {

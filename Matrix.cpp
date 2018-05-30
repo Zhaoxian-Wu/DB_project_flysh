@@ -25,6 +25,7 @@ DenseMatrix::DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension
     size_t vectorNumOfOnePage = getVectorNumPerPage(dimension);
     size_t pageNum = row / vectorNumOfOnePage;
     size_t needNumOfSize = PAGE_SIZE / sizeof(size_t);
+    vectorNumPerPage = getVectorNumPerPage(dimension);
     
     size_t currentVector = 0;
 	char buffer[PAGE_SIZE];
@@ -90,10 +91,10 @@ DenseMatrix::DenseMatrix(string matrixName) {
     fread(tempBuffer, sizeof(size_t), 2, file);
     row = *reinterpret_cast<size_t*>(tempBuffer);
     dimension = *reinterpret_cast<size_t*>(tempBuffer + sizeof(size_t));
+    vectorNumPerPage = getVectorNumPerPage(dimension);
 }
 
 float* DenseMatrix::operator[] (size_t _row) {
-	size_t vectorNumPerPage = getVectorNumPerPage(dimension);
     size_t pageInDisk = _row / vectorNumPerPage;
     size_t vectorIndex = _row % vectorNumPerPage;
     size_t head = vectorIndex * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
@@ -195,7 +196,6 @@ void DenseMatrix::showPage(int pageNum) {
 }
 
 void DenseMatrix::setRow(size_t row) {
-    size_t vectorNumPerPage = getVectorNumPerPage(dimension);
     size_t pageInDisk = row / vectorNumPerPage;
     for (int i = 0; i < PAGE_NUMBER; i++) {
         if (page[i] == pageInDisk && used[i] == true) {

@@ -107,7 +107,7 @@ void GaussionProject(string dataSet) {
 			}
 			cout << "已处理" << i << "行" << endl;
 		}
-        memcpy(gaussMatrix[i], row, newDim * sizeof(float));
+        memcpy(C[i], row, newDim * sizeof(float));
         C.setRow(i);
 	}
     delete[] row;
