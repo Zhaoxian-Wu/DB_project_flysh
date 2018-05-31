@@ -12,7 +12,7 @@
 
 using namespace std;
 
-//#define TEST_TIME_1000_REPEAT
+#define TEST_TIME_1000_REPEAT
 #ifdef TEST_TIME_1000_REPEAT
 void testAccurateKNN(Matrix& rowData, Matrix& processedData) {
     const int k = 200;
@@ -25,18 +25,18 @@ void testAccurateKNN(Matrix& rowData, Matrix& processedData) {
         randomList.insert(rand() % rowData.getRow());
     }
     {
-        //// 真正KNN（使用原始数据）
-        //clock_t start = clock();
-        //for each (size_t i in randomList) {
-        //    Array<size_t> knn = query(k, Array<float>(dimension, rowData[i]), rowData);
-        //}
-        //clock_t end = clock();
-        //double time = clock() - start;
-        //printf("求查询向量真正KNN（使用原始数据）\n[总时间  ]%f秒（共%d个）\n[平均时间]%f秒\n",
-        //    time / CLOCKS_PER_SEC,
-        //    TEST_VECTOR,
-        //    time / (TEST_VECTOR * CLOCKS_PER_SEC)
-        //);
+        // 真正KNN（使用原始数据）
+        clock_t start = clock();
+        for each (size_t i in randomList) {
+            Array<size_t> knn = query(k, Array<float>(dimension, rowData[i]), rowData);
+        }
+        clock_t end = clock();
+        double time = clock() - start;
+        printf("求查询向量真正KNN（使用原始数据）\n[总时间  ]%f秒（共%d个）\n[平均时间]%f秒\n",
+            time / CLOCKS_PER_SEC,
+            TEST_VECTOR,
+            time / (TEST_VECTOR * CLOCKS_PER_SEC)
+        );
     }
     {
         // 真正KNN（使用处理后数据）
@@ -50,7 +50,7 @@ void testAccurateKNN(Matrix& rowData, Matrix& processedData) {
 }
 #endif // TEST_TIME_1000_REPEAT
 
-#define TEST_TIME_PER_QUERY
+//#define TEST_TIME_PER_QUERY
 #ifdef TEST_TIME_PER_QUERY
 
 void testAccurateKNN(Matrix& rowData, Matrix& processedData) {

@@ -36,9 +36,6 @@ void preProcess(string dataSet) {
             row[j] = sMatrix[i][j] * MEAN / rowMean;
         }
         pMatrix.setRow(i);
-        if (i % 1000 == 0) {
-		    cout << "已处理" << i << "行" << endl;
-        }
     }
     pMatrix.showPage(1);
 }
@@ -105,7 +102,6 @@ void GaussionProject(string dataSet) {
 			for (size_t k = 0; k != dimension; ++k) {
 				row[j] += aRow[k] * bCol[k];
 			}
-			cout << "已处理" << i << "行" << endl;
 		}
         memcpy(C[i], row, newDim * sizeof(float));
         C.setRow(i);
@@ -120,12 +116,12 @@ void FlyProject(string dataSet) {
     DenseMatrix preProcessMatrix(dataSet + "_preProcess");
     DenseMatrix flyMatrix(dataSet + "_flyMatrix");
 
-	assert(preProcessMatrix.getColumn() == flyMatrix.getColumn());
+    assert(preProcessMatrix.getColumn() == flyMatrix.getColumn());
 
-	size_t vectorCount = preProcessMatrix.getRow();
-	size_t dimension = preProcessMatrix.getColumn();
-	size_t newDim = flyMatrix.getRow();
-	DenseMatrix C(dataSet + "_flyProjectMatrix", vectorCount, newDim);
+    size_t vectorCount = preProcessMatrix.getRow();
+    size_t dimension = preProcessMatrix.getColumn();
+    size_t newDim = flyMatrix.getRow();
+    DenseMatrix C(dataSet + "_flyProjectMatrix", vectorCount, newDim);
 
     float* row = new float[newDim];
     float* aRow = new float[newDim];
@@ -137,10 +133,10 @@ void FlyProject(string dataSet) {
             for (size_t k = 0; k != dimension; ++k) {
                 row[j] += aRow[k] * bCol[k];
             }
-            cout << "已处理" << i << "行" << endl;
         }
-        memcpy(flyMatrix[i], row, newDim * sizeof(float));
-        flyMatrix.setRow(i);
+        cout << "已处理" << i << "行" << endl;
+        memcpy(C[i], row, newDim * sizeof(float));
+        C.setRow(i);
     }
     delete[] row;
     delete[] aRow;
@@ -155,7 +151,7 @@ struct MyStruct {
 // 6.基于果蝇投影矩阵哈希后，应用了random机制的数据。
 void randomMatrix(string dataSet, size_t k) {
     //assum that M is the target matrix
-    DenseMatrix M(dataSet + "_source");
+    DenseMatrix M(dataSet + "_flyMatrix");
 
     size_t ROW = M.getRow();
     size_t COL = M.getColumn();
@@ -206,7 +202,7 @@ void randomMatrix(string dataSet, size_t k) {
 // 7.基于果蝇投影矩阵哈希后，应用了WTA机制的数据。
 void WTAMatrix(string dataSet, size_t k) {
     //assum that M is the target matrix
-    DenseMatrix M(dataSet + "_source");
+    DenseMatrix M(dataSet + "_flyMatrix");
     size_t ROW = M.getRow();
     size_t COL = M.getColumn();
 
@@ -261,7 +257,7 @@ void WTAMatrix(string dataSet, size_t k) {
 // 8.基于果蝇投影矩阵哈希后，应用了binary机制的数据。
 void binaryMatrix(string dataSet, size_t k) {
     //assum that M is the target matrix
-    DenseMatrix M(dataSet + "_source");
+    DenseMatrix M(dataSet + "_flyMatrix");
     size_t ROW = M.getRow();
     size_t COL = M.getColumn();
 

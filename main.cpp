@@ -29,7 +29,7 @@ int main() {
 		cout << "[开始创建高斯投影矩阵]" << endl;
 		GaussionMatrix(dataset[i], 32, dimension);
 		cout << "[开始创建果蝇投影矩阵]" << endl;
-		FlyMatrix(dataset[i], 32, dimension, 0.1);
+		FlyMatrix(dataset[i], 10 * dimension, dimension, 0.1f);
 
         // 4.使用高斯投影矩阵哈希后的数据。
 		cout << "[开始使用高斯投影矩阵哈希数据]" << endl;
@@ -105,12 +105,12 @@ using namespace std;
 int main() {
     DenseMatrix M("mnist_preProcess");
     //M.showPage(10);
-	for (int i = 0; i != M.getRow(); ++i) {
-		float sum = 0;
-		for (int j = 0; j != M.getColumn(); ++j) {
-			sum += M[i][j];
-		}
-		cout << (sum /= M.getColumn()) << endl;
-	}
+    for (int i = 0; i != M.getRow(); ++i) {
+        float sum = 0;
+        for (int j = 0; j != M.getColumn(); ++j) {
+            sum += M[i][j];
+        }
+        cout << (sum /= M.getColumn()) << endl;
+    }
 }
 #endif // OTHER

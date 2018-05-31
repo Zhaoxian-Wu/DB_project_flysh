@@ -9,12 +9,13 @@
 #define PAGE_NUMBER 50
 #define PAGE_SIZE (64 * 1024)
 
-#define DATA_SET "mnist"
+#define DATA_SET "mnist10k"
 #define SOURCE_NAME "datadir/mnist_source"
 #define FILE_DIMENSION 784
 #define PAGE_VECTOR_NUM 20
 
 //#define DATA_SET "glove"
+//#define SOURCE_NAME "datadir/glove_source"
 //#define FILE_DIMENSION 300
 //#define PAGE_VECTOR_NUM 54
 
@@ -28,7 +29,7 @@ void savePage (string filePath, size_t currentPage, size_t size, float vectorSet
 	in.open(SOURCE_NAME, ios::out | ios::binary | ios::app);
 	char buffer[PAGE_SIZE];
 	size_t head = 0;
-	size_t tail = PAGE_SIZE - (21 * sizeof(size_t)) - 1;
+	size_t tail = PAGE_SIZE - ((PAGE_VECTOR_NUM + 1) * sizeof(size_t)) - 1;
 	for (int i = 0; i < PAGE_VECTOR_NUM; i++) {
 		size_t tempi = id[i];
 		memcpy(buffer + head, reinterpret_cast<char*>(&tempi), sizeof(size_t));

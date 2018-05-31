@@ -135,6 +135,7 @@
     <ClCompile Include="database.cpp" />
     <ClCompile Include="dataProcess.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mAP.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="query.cpp" />
     <ClCompile Include="tests.cpp" />

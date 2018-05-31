@@ -245,3 +245,5 @@ source
 glove*
 mnist
 dataDir/*
+/dataDir1
+/mnist10k

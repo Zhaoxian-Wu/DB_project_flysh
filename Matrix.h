@@ -39,9 +39,6 @@ private:
     // 计算一页可以存多少向量
     static size_t getVectorNumPerPage(size_t dimension);
 
-    // 得到指定页的缓冲区
-    char* getPageBuffer(size_t pageNum);
-
     // 得到空闲的页面编号
     int getFreePageIndex();
 

@@ -37,7 +37,7 @@ Array<size_t> ID_DIST_HEAP::getList() {
 			ID_DIST_PAIR temp = buffer[last];
 			buffer[last] = buffer[0];
 			buffer[0] = temp;
-			adjust(0);
+            adjust(0, last);
 		}
 		hasSort = true;
 	}
@@ -65,22 +65,22 @@ void ID_DIST_HEAP::insert(ID_DIST_PAIR pair) {
 	} else if(pair.dist < buffer[0].dist) {
 		// 这个堆事实上是大根堆，如果新距离小于堆顶，则替换掉堆顶元素
 		buffer[0] = pair;
-		adjust(0);
+		adjust(0, capacity);
 	}
 }
 
 // 自上而下调整堆
-void ID_DIST_HEAP::adjust(size_t index) {
+void ID_DIST_HEAP::adjust(size_t index, size_t last) {
 	ID_DIST_PAIR pair = buffer[index];
 	size_t child = 2 * index + 1;
-	if (child + 1 < capacity && buffer[child + 1].dist > buffer[child].dist) {
+	if (child + 1 < last && buffer[child + 1].dist > buffer[child].dist) {
 		child = child + 1;
 	}
-	while (child < capacity && buffer[child].dist > pair.dist) {
+	while (child < last && buffer[child].dist > pair.dist) {
 		buffer[index] = buffer[child];
 		index = child;
 		child = 2 * child + 1;
-		if (child + 1 < capacity && buffer[child + 1].dist > buffer[child].dist) {
+		if (child + 1 < last && buffer[child + 1].dist > buffer[child].dist) {
 			child = child + 1;
 		}
 	}

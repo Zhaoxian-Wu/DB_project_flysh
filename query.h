@@ -30,5 +30,5 @@ public:
     void insert(ID_DIST_PAIR pair);
 private:
     // 自上而下调整堆
-    void adjust(size_t index);
+    void adjust(size_t index, size_t last);
 };

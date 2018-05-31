@@ -15,15 +15,15 @@ DenseMatrix::DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension
     string f = dir + matrixName;
     row = _vectorNum;
     dimension = _dimension;
-    file = fopen(f.c_str(), "wba");
+    vectorNumPerPage = getVectorNumPerPage(dimension);
+    file = fopen(f.c_str(), "wb");
     //write the head of file
     char fileHead[FILE_HEAD_SIZE];
     memcpy(fileHead, reinterpret_cast<char*>(&row), sizeof(size_t));
     memcpy(fileHead + sizeof(size_t), reinterpret_cast<char*>(&dimension), sizeof(size_t));
     fwrite(fileHead, sizeof(size_t), 2, file);
 
-    size_t vectorNumOfOnePage = getVectorNumPerPage(dimension);
-    size_t pageNum = row / vectorNumOfOnePage;
+    size_t pageNum = row / vectorNumPerPage;
     size_t needNumOfSize = PAGE_SIZE / sizeof(size_t);
     vectorNumPerPage = getVectorNumPerPage(dimension);
     
@@ -35,9 +35,9 @@ DenseMatrix::DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension
     //save page
     for (size_t i = 0; i < pageNum; i++) {
 		size_t head = 0;
-		size_t tail = PAGE_SIZE - ((vectorNumOfOnePage + 1) * sizeof(size_t)) - 1;
+		size_t tail = PAGE_SIZE - ((vectorNumPerPage + 1) * sizeof(size_t)) - 1;
     	//write the vector
-        for (size_t j = 0; j < vectorNumOfOnePage; j++) {
+        for (size_t j = 0; j < vectorNumPerPage; j++) {
         	//write the vector id
         	memcpy(buffer + head, reinterpret_cast<char*>(&currentVector), sizeof(size_t));
         	head += sizeof(size_t);
@@ -52,10 +52,10 @@ DenseMatrix::DenseMatrix(string matrixName, size_t _vectorNum, size_t _dimension
 			tail += sizeof(size_t);
         }
         //write vector number of page
-		memcpy(buffer + tail, reinterpret_cast<char*>(&vectorNumOfOnePage), sizeof(size_t));
+		memcpy(buffer + tail, reinterpret_cast<char*>(&vectorNumPerPage), sizeof(size_t));
         fwrite(buffer, PAGE_SIZE, 1, file);
     }
-    size_t restVector = row - pageNum * vectorNumOfOnePage;
+    size_t restVector = row - pageNum * vectorNumPerPage;
     if (restVector != 0) {
     	size_t head = 0;
 		size_t tail = PAGE_SIZE - ((restVector + 1) * sizeof(size_t)) - 1;
@@ -99,7 +99,7 @@ float* DenseMatrix::operator[] (size_t _row) {
     size_t vectorIndex = _row % vectorNumPerPage;
     size_t head = vectorIndex * (sizeof(float) * dimension + sizeof(size_t)) + sizeof(size_t);
     int pageInBuffer = getPageIndexInBuffer(pageInDisk);
-    return reinterpret_cast<float*>(getPageBuffer(pageInBuffer) + head);
+    return reinterpret_cast<float*>(buffer[pageInBuffer] + head);
 }
 
 size_t DenseMatrix::getVectorNumPerPage(size_t dimension) {
@@ -126,10 +126,6 @@ int DenseMatrix::getPageIndexInBuffer(size_t pageInDisk) {
     hasChange[pageInBuffer] = false;
 
 	return pageInBuffer;
-}
-
-char* DenseMatrix::getPageBuffer(size_t pageInBuffer) {
-    return buffer[pageInBuffer];
 }
 
 int DenseMatrix::getFreePageIndex() {
